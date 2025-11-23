@@ -1,0 +1,43 @@
+/* table */
+#calendar {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font family: Arial, sans-serif;
+}
+
+/* table header */
+#calendar th {
+    background: #ffffe4;
+    text-align: center;
+    font-weight: bold;
+    border: 10px solid #010203;
+    padding: 8px;
+    min-width: 100px;
+}
+
+/* time collumn */
+#calendar th[scope="row"] {
+    background: #f0f0f0;
+    font-weight: normal;
+}
+
+/* table cells */
+#calendar td {
+    border: 1px solid #010203;
+    height: 60px;
+    min-width: 100px;
+    text-align: center;
+    cursor: pointer;
+    background: #ffffff;
+}
+
+/* hover effect on selected cells */
+#calendar td:hover {
+    background: #eef;
+}
+
+/* selected time slot highlight */
+#calendar td.selected {
+    background: rgb(174, 174, 222);
+}
