@@ -17,4 +17,48 @@ doccument.addEventListener("DOMContentLoaded", function() {
     });     
 
     calendarTable.appendChild(headerRow);
+
+    // create time slots rows
+    timeSlots.forEach(function(time) {
+        const timeRow = document.createElement("tr");
+
+        //create the time table cell
+        const timeCell = document.createElement("td");
+        timeCell.setAttribute('scope', 'row');
+        timeCell.innerText = time;
+        timeRow.appendChild(timeCell);
+
+        // create a cell for each day of the week
+        daysOfWeek.forEach(function(day) {
+            const dayCell = doccument.createElement('td');
+            dayCell.setAttribute('data-day', day);
+            dayCell.setAttribute('data-time', time);
+            timeRow.appendChild(dayCell);
+        });
+
+        //append the time row to the calendar table
+        calendarTable.appendChild(timeRow);
+
+        //add click event listener to the table
+        calendarTable.addEventListner('click', function(event) {
+            const clickedCell = event.target;
+
+            // handle clicks only on day cells
+            if (clickedCell.tagName === 'TD') {
+
+                clickedCell.classList.toggle('selected');
+
+                // get the day and time from data attributes
+                const day = clickedCell.getAttribute('data-day');
+                const time = clickedCell.getAttribute('data-time');
+                
+                if (clickedCell.classList.contains('selected')) {
+                    console.log(`Selected: ${day} at ${time}`);
+                } 
+                else {
+                    console.log(`Deselected: ${day} at ${time}`);
+                }
+            }   
+        })    
+    });
 });
