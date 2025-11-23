@@ -2,6 +2,13 @@ from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
+# Function to provide data for the calendar html template
+def get_calendar_data():
+    week_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    months = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"]
+    return render_template("calendar.html", week_days=week_days, months=months)
+
 # The homepage route which dispalys the calendar
 @app.route("/")
 def calendar_page():
@@ -13,6 +20,7 @@ def select_date():
     data = request.get_json() # Get JSON data from the request
     if not data:
         return jsonify({"error": "No data provided"}), 400
+    # Extract date information from the received data
     time = data.get("time")
     day = data.get("day")
     month = data.get("month")
