@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Calendar</title>
+    <!-- Link to CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>Weekly Calendar</h1>
+    <!-- Calendar Table -->
+    <table id="calendar">
+        <thead>
+            <tr>
+                <th>Time</th>
+                {% for day in week_days %}
+                <th>{{ day }}</th>
+                {% endfor %}
+                <th> Month </th>
+                    <select id="month-select">
+                        {% for month in months %}
+                        <option value="{{ month }}">{{ month }}</option>
+                        {% endfor %}
+                    </select>
+                
+
+            </tr>
+        </thead>
+
+    </table>
+
+</body>
