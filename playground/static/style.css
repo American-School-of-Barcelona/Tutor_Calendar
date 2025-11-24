@@ -3,12 +3,12 @@
     width: 100%;
     border-collapse: collapse;
     margin: 1em 0;
-    font family: Arial, sans-serif;
+    font-family: Arial, sans-serif;
 }
 
 /* table header */
 #calendar th {
-    background: #ffffe4;
+    background: #f0f0f0;
     text-align: center;
     font-weight: bold;
     border: 10px solid #010203;
@@ -29,7 +29,7 @@
     min-width: 100px;
     text-align: center;
     cursor: pointer;
-    background: #ffffff;
+    background: #d4d4d4;
 }
 
 /* hover effect on selected cells */
