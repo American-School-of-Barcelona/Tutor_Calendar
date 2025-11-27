@@ -136,10 +136,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+!! FIND THE ROADMAP IN THE "WORKPLAN.md" FILE !!
 
 As you develop your roadmap, add new features here and to [open issues](https://github.com/github_username/repo_name/issues)
 

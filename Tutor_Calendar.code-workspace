@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"name": "Application Code",
+			"path": "./app"
+		},
+		{
+			"name": "Static Files",
+			"path": "./static"
+		},
+		{
+			"name": "Templates",
+			"path": "./templates"
+		},
+		{
+			"name": "Documentation",
+			"path": "./Docs"
+		},
+		{
+			"name": "Database",
+			"path": "./instance"
+		},
+		{
+			"name": "Migrations",
+			"path": "./migrations"
+		},
+		{
+			"name": "Config & Root",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/*.pyc": true
+		}
+	}
+}
