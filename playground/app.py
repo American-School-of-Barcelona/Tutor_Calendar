@@ -40,6 +40,46 @@ def select_date():
     return jsonify({"status": "success", "selected_date": selected_date,
                     "time": time, "day": day, "month": month, "year": year})
 
+from datetime import datetime
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.String(20), nullable=False) # 'admin' or 'student'
+    status = db..Column(db.String(20), default="pending") # pending/approved/rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+class Availability(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    repeat_rule = db.Column(db.String(50)) # daily/weekly/monthly/until date/etc.
+    repeat_until = db.Column(db.DateTime, nullable=True)
+    user = db.relationship('User', backref=db.backref('availabilities', lazy=True))
+
+class Booking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    tutor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), default="pending")  # pending/accepted/denied
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    student = db.relationship("User", foreign_keys=[student_id], backref="student_bookings")
+    tutor = db.relationship("User", foreign_keys=[tutor_id], backref="tutor_bookings")
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship("User", backref=db.backref("notifications", lazy=True))
+
+
 #Run the app
 if __name__ == "__main__":
     app.run(debug=True)

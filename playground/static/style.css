@@ -34,7 +34,7 @@
 
 /* hover effect on selected cells */
 #calendar td:hover {
-    background: #eef;
+    background: rgb(196, 196, 255);
 }
 
 /* selected time slot highlight */
