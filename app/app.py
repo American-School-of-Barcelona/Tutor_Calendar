@@ -2,6 +2,9 @@ from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import session, redirect, url_for
+
 app = Flask(__name__)
 
 # Configuration for SQLAlchemy
@@ -79,7 +82,28 @@ class Notification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship("User", backref=db.backref("notifications", lazy=True))
 
+def hash_password(password: str) -> str:
 
+@app.route("/login", methods["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
+            session["user_id"] = user.id
+            session["user.role"] = user.id
+            return redirect("/calendar")
+        
+        return render_template("login.html", error="Invalid credentials")
+        
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 #Run the app
 if __name__ == "__main__":
     app.run(debug=True)
