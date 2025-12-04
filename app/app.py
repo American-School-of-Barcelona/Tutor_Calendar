@@ -3,7 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
+import os
+
+app = Flask(__name__, 
+            template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
+            static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
 
 # Configuration for SQLAlchemy
 app.config['SECRET_KEY'] = 'your-secret-key-here-change-this-later'
@@ -23,6 +27,8 @@ def get_calendar_data():
 # The homepage route which dispalys the calendar
 @app.route("/")
 def calendar_page():
+    if "user_id" not in session:
+        return redirect("/login")
     return render_template("calendar.html")
 
 # The route to handle date selection
