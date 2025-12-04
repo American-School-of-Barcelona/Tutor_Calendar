@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, session, redirect, url_for
+from flask import Flask, jsonify, request, render_template, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -91,7 +91,6 @@ def hash_password(password: str) -> str:
     return generate_password_hash(password)
 
 @app.route("/login", methods=["GET", "POST"])
-
 def login():
     if request.method == "POST":
         email = request.form.get("email")
@@ -101,15 +100,13 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
             session["user_role"] = user.role
-            return redirect("/calendar")
+            return redirect("/")
         
-        return redirect("/login?error=invalid")
+        flash("Invalid email or password", "error")
+        return redirect("/login")
     
-    error_message = None
-    if request.args.get('error') == "invalid":
-        error_message = "Invalid email or password"
-    
-    return render_template("login.html", error=error_message)
+   
+    return render_template("login.html")
 
 @app.route("/logout")
 
