@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Tutomatics – Login</title>
@@ -9,41 +8,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<body class="auth-body">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h1 class="auth-title">Tutomatics</h1>
+            <p class="auth-subtitle">Sign in to your tutoring dashboard</p>
 
-<body>
-        {% if error %}
-          <div class="auth-error">{{ error }}</div>
-        {% endif %}
-  
-        <form method="POST" class="auth-form">
-          <div class="auth-field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required>
-          </div>
-  
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="auth-error">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-  
-          <button type="submit" class="auth-button">Log In</button>
-        </form>
-  
-        <div class="auth-links">
-          <a href="#">Don't have an account? Sign up now!</a>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="auth-error">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="auth-form">
+                <div class="auth-field">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" required>
+                </div>
+
+                <button type="submit" class="auth-button">Log In</button>
+            </form>
+
+            <div class="auth-links">
+                <a href="/signup">Don't have an account? Sign up now!</a>
+            </div>
         </div>
-      </div>
     </div>
-    <script>
-        // Remove error message from URL on page load
-        if (window.location.search.inclodes('error=')) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-    
-        }
-
-    </script>
-  </body>
-  </html>
+</body>
+</html>
