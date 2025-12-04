@@ -1,13 +1,12 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import session, redirect, url_for
 
 app = Flask(__name__)
 
 # Configuration for SQLAlchemy
+app.config['SECRET_KEY'] = 'your-secret-key-here-change-this-later'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -83,8 +82,10 @@ class Notification(db.Model):
     user = db.relationship("User", backref=db.backref("notifications", lazy=True))
 
 def hash_password(password: str) -> str:
+    return generate_password_hash(password)
 
-@app.route("/login", methods["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
+
 def login():
     if request.method == "POST":
         email = request.form.get("email")
@@ -93,7 +94,7 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
-            session["user.role"] = user.id
+            session["user_role"] = user.id
             return redirect("/calendar")
         
         return render_template("login.html", error="Invalid credentials")
@@ -101,6 +102,7 @@ def login():
     return render_template("login.html")
 
 @app.route("/logout")
+
 def logout():
     session.clear()
     return redirect(url_for("login"))
