@@ -100,12 +100,16 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
             session["user_id"] = user.id
-            session["user_role"] = user.id
+            session["user_role"] = user.role
             return redirect("/calendar")
         
-        return render_template("login.html", error="Invalid credentials")
-        
-    return render_template("login.html")
+        return redirect("/login?error=invalid")
+    
+    error_message = None
+    if request.args.get('error') == "invalid":
+        error_message = "Invalid email or password"
+    
+    return render_template("login.html", error=error_message)
 
 @app.route("/logout")
 
