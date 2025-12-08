@@ -257,3 +257,60 @@
     background: #f3b562;
     transform: translateY(-1px);
 }
+
+/* dashboard page */
+.dashboard-body {
+    margin: 0;
+    min-height: 100vh;
+    background: #fdf4e3;
+    font-family: 'Work Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #333333;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.dashboard-title {
+    font-size: 32px;
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.dashboard-tabs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e0d2bc;
+    padding-bottom: 8px;
+}
+
+.tab-link:hover {
+    background: #f2dfc3;
+}
+
+.tab-link.active {
+    background: #fff8ec;
+    border-bottom: 2px solid #f1c27d;
+    margin-bottom: -2px;
+}
+
+.dashboard-content {
+    background: #fff8ec;
+    border-radius: 16px;
+    padding: 32px;
+    min-height: 400px;
+}
+
+.dashboard-footer {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.dashboard-footer a {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+}
