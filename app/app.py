@@ -212,6 +212,15 @@ def signup():
         return redirect("/signup")
     return render_template("signup.html")
 
+@app.route("/init-db")
+def init_db():
+    """Create database tables - REMOVE IN PRODUCTION"""
+    try:
+        db.create_all()
+        return "Database tables created successfully!<br><a href='/create-test-users'>Create test users</a>"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 @app.route("/logout")
 
 def logout():
