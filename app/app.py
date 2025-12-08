@@ -110,7 +110,7 @@ def login():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-     if request.method == "POST":
+    if request.method == "POST":
         name = request.form.get("name")
         lastname = request.form.get("lastname")
         email = request.form.get("email")
