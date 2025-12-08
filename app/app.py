@@ -98,10 +98,20 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
+            # check if user is approved
+            if user.role == "student" and user.status != "approved":
+                flash("Your account is pending approval. Please wait for admin approval.", "error")
+                return redirect("/login")
+            
             session["user_id"] = user.id
             session["user_role"] = user.role
-            return redirect("/")
-        
+
+            # Redirect based on role
+            if user.role == "admin":
+                return redirect("/admin/dashboard")
+            else:
+                return redirect("/student/dashboard")
+
         flash("Invalid email or password", "error")
         return redirect("/login")
     
@@ -146,7 +156,6 @@ def signup():
         # Show success message
         flash("Sign up request submitted! Check your email for an approval notification", "success")
         return redirect("/signup")
-    
     return render_template("signup.html")
 
 @app.route("/logout")
