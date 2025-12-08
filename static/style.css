@@ -184,3 +184,71 @@
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
     transform: translateY(-1px);
 }
+
+/* Signup Page */
+
+/* Success Message */
+.auth-success {
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #d4edda;
+    color: #155724;
+    font-size: 13px;
+}
+
+/* Success Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff8ec;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+    margin: 0 0 16px;
+    font-size: 24px;
+    color: #333333;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.modal-content p {
+    margin: 0 0 24px;
+    color: #666666;
+    font-size: 14px;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.modal-button {
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    background: #f1c27d;
+    color: #333333;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 150ms ease, transform 120ms ease;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.modal-button:hover {
+    background: #f3b562;
+    transform: translateY(-1px);
+}
