@@ -118,6 +118,40 @@ def login():
    
     return render_template("login.html")
 
+@app.route("/create-test-users")
+def create_test_users():
+    
+    # Check if users already exist
+    admin = User.query.filter_by(email="admin@gmail.com").first()
+    student = User.query.filter_by(email="student@gmail.com").first()
+    
+    if admin:
+        return "Admin user already exists!"
+    if student:
+        return "Student user already exists!"
+    
+    # Create admin user
+    admin_user = User(
+        email="admin@gmail.com",
+        password_hash=hash_password("admin"),
+        role="admin",
+        status="approved"
+    )
+    
+    # Create student user
+    student_user = User(
+        email="student@gmail.com",
+        password_hash=hash_password("student"),
+        role="student",
+        status="approved"
+    )
+    
+    db.session.add(admin_user)
+    db.session.add(student_user)
+    db.session.commit()
+    
+    return "Test users created!<br>Admin: admin@gmail.com / admin<br>Student: student@gmail.com / student"
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
