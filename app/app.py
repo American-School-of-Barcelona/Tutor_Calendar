@@ -153,6 +153,25 @@ def create_test_users():
     
     return "Test users created!<br>Admin: admin@gmail.com / admin<br>Student: student@gmail.com / student"
 
+@app.route("/create-pending-student")
+def create_pending_student():
+    """Create a pending student for testing"""
+    pending = User.query.filter_by(email="pending@gmail.com").first()
+    if pending:
+        return "Pending student already exists!"
+    
+    pending_user = User(
+        email="pending@gmail.com",
+        password_hash=hash_password("pending"),
+        role="student",
+        status="pending"  # Not approved
+    )
+    
+    db.session.add(pending_user)
+    db.session.commit()
+    
+    return "Pending student created!<br>Email: pending@gmail.com / pending<br>Try logging in to see the approval message."
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
