@@ -108,6 +108,47 @@ def login():
    
     return render_template("login.html")
 
+@app,route(/signup", methods=["GET", "POST"])
+def signup():
+     if request.method == "POST":
+        name = request.form.get("name")
+        lastname = request.form.get("lastname")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        repeat_password = request.form.get("repeat_password")
+        
+        # Validation
+        if not all([name, lastname, email, password, repeat_password]):
+            flash("All fields are required", "error")
+            return redirect("/signup")
+        
+        if password != repeat_password:
+            flash("Passwords do not match", "error")
+            return redirect("/signup")
+        
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Email already registered", "error")
+            return redirect("/signup")
+        
+        # Create new user with pending status
+        new_user = User(
+            email=email,
+            password_hash=hash_password(password),
+            role="student",
+            status="pending"
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Show success message
+        flash("Sign up request submitted! Check your email for an approval notification", "success")
+        return redirect("/signup")
+    
+    return render_template("signup.html")
+    
 @app.route("/logout")
 
 def logout():
