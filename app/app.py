@@ -166,3 +166,25 @@ def logout():
 #Run the app
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+    if "user_id" not in session or session.get("user_role") != "admin":
+        flash("Access denied. Admin login required.", "error")
+        return redirect("/login")
+    
+    return render_template("admin/dashboard.html")
+
+@app.route("/student/dashboard")
+def student_dashboard():
+    if "user_id" not in session:
+        flash("Please log in to continue.", "error")
+        return redirect("/login")
+    
+    user = User.query.get(session["user_id"])
+    
+    # Check if student is approved
+    if user.status != "approved":
+        return render_template("student/pending.html")
+    
+    return render_template("student/dashboard.html")

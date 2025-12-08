@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Awaiting Approval - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h1 class="auth-title">Awaiting Approval</h1>
+            <p class="auth-subtitle">Your account is pending admin approval.</p>
+            <p style="text-align: center; color: #666666; margin: 20px 0;">
+                Please wait for an administrator to approve your account. 
+                You will be notified once your account has been activated.
+            </p>
+            <div class="auth-links">
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
