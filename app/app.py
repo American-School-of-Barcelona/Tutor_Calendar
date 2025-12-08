@@ -223,6 +223,27 @@ def init_db():
     except Exception as e:
         return f"Error: {str(e)}"
 
+@app.route("/check-db")
+def check_db():
+    """Check database status"""
+    try:
+        # Try to query users
+        user_count = User.query.count()
+        admin = User.query.filter_by(email="admin@gmail.com").first()
+        
+        result = f"Database Status:<br>"
+        result += f"Total users: {user_count}<br>"
+        result += f"Admin user exists: {admin is not None}<br>"
+        
+        if admin:
+            result += f"Admin email: {admin.email}<br>"
+            result += f"Admin role: {admin.role}<br>"
+            result += f"Admin status: {admin.status}<br>"
+        
+        return result
+    except Exception as e:
+        return f"Database Error: {str(e)}<br><a href='/init-db'>Create tables first</a>"
+
 @app.route("/logout")
 
 def logout():
