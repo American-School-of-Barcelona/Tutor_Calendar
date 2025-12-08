@@ -120,6 +120,7 @@ def login():
 
 @app.route("/create-test-users")
 def create_test_users():
+    """Create test users for development - REMOVE IN PRODUCTION"""
     
     # Check if users already exist
     admin = User.query.filter_by(email="admin@gmail.com").first()
