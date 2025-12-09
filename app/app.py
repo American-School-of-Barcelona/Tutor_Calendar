@@ -97,9 +97,22 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-
+        
+        print(f"DEBUG: Attempting login with email: {email}")  # Add this
+        
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
+        
+        if not user:
+            print(f"DEBUG: User not found")  # Add this
+            flash("Invalid email or password", "error")
+            return redirect("/login")
+        
+        print(f"DEBUG: User found: {user.email}, role: {user.role}")  # Add this
+        
+        password_match = check_password_hash(user.password_hash, password)
+        print(f"DEBUG: Password matches: {password_match}")  # Add this
+        
+        if user and password_match:
             # check if user is approved
             if user.role == "student" and user.status != "approved":
                 flash("Your account is pending approval. Please wait for admin approval.", "error")
@@ -117,8 +130,35 @@ def login():
         flash("Invalid email or password", "error")
         return redirect("/login")
     
-   
     return render_template("login.html")
+
+@app.route("/debug-login")
+def debug_login():
+    """Debug login - check if users exist and test password"""
+    try:
+        admin = User.query.filter_by(email="admin@gmail.com").first()
+        
+        if not admin:
+            return "Admin user does NOT exist!<br><a href='/create-test-users'>Create test users</a>"
+        
+        # Test password
+        test_password = "admin"
+        password_match = check_password_hash(admin.password_hash, test_password)
+        
+        result = f"Admin user found!<br>"
+        result += f"Email: {admin.email}<br>"
+        result += f"Role: {admin.role}<br>"
+        result += f"Status: {admin.status}<br>"
+        result += f"Password hash: {admin.password_hash[:50]}...<br>"
+        result += f"Password 'admin' matches: {password_match}<br>"
+        
+        # Test with wrong password
+        wrong_match = check_password_hash(admin.password_hash, "wrong")
+        result += f"Password 'wrong' matches: {wrong_match}<br>"
+        
+        return result
+    except Exception as e:
+        return f"Error: {str(e)}<br><a href='/init-db'>Create tables first</a>"
 
 @app.route("/create-test-users")
 def create_test_users():
