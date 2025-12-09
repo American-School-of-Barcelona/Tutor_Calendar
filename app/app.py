@@ -54,10 +54,11 @@ from datetime import datetime
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=True)  
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), nullable=False) # 'admin' or 'student'
-    status = db.Column(db.String(20), default="pending") # pending/approved/rejected
+    role = db.Column(db.String(20), nullable=False) 
+    status = db.Column(db.String(20), default="pending") 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
 class Availability(db.Model):
@@ -98,19 +99,19 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
         
-        print(f"DEBUG: Attempting login with email: {email}")  # Add this
+        print(f"DEBUG: Attempting login with email: {email}")  
         
         user = User.query.filter_by(email=email).first()
         
         if not user:
-            print(f"DEBUG: User not found")  # Add this
+            print(f"DEBUG: User not found")                 
             flash("Invalid email or password", "error")
             return redirect("/login")
         
-        print(f"DEBUG: User found: {user.email}, role: {user.role}")  # Add this
+        print(f"DEBUG: User found: {user.email}, role: {user.role}")                            
         
         password_match = check_password_hash(user.password_hash, password)
-        print(f"DEBUG: Password matches: {password_match}")  # Add this
+        print(f"DEBUG: Password matches: {password_match}")  
         
         if user and password_match:
             # check if user is approved
