@@ -157,6 +157,67 @@ def debug_login():
         return result
     except Exception as e:
         return f"Error: {str(e)}<br><a href='/init-db'>Create tables first</a>"
+    
+@app.route("/check-users")
+def check_users():
+    """Check if test users exist and verify their credentials"""
+    try:
+        result = "<h2>User Database Check</h2>"
+        
+        # Check admin user by username
+        admin_by_username = User.query.filter_by(username="admin").first()
+        result += f"<h3>Admin by username 'admin':</h3>"
+        if admin_by_username:
+            result += f"✓ Found!<br>"
+            result += f"  - ID: {admin_by_username.id}<br>"
+            result += f"  - Username: {admin_by_username.username}<br>"
+            result += f"  - Email: {admin_by_username.email}<br>"
+            result += f"  - Role: {admin_by_username.role}<br>"
+            result += f"  - Status: {admin_by_username.status}<br>"
+            
+            # Test password
+            test_pass = "A12345"
+            password_match = check_password_hash(admin_by_username.password_hash, test_pass)
+            result += f"  - Password 'A12345' matches: {password_match}<br>"
+            if not password_match:
+                result += f"  - Password hash: {admin_by_username.password_hash[:50]}...<br>"
+        else:
+            result += "✗ NOT FOUND<br>"
+        
+        # Check admin user by email
+        admin_by_email = User.query.filter_by(email="admin@tutomatics.com").first()
+        result += f"<h3>Admin by email 'admin@tutomatics.com':</h3>"
+        if admin_by_email:
+            result += f"✓ Found!<br>"
+            result += f"  - Username: {admin_by_email.username}<br>"
+        else:
+            result += "✗ NOT FOUND<br>"
+        
+        # Check student user
+        student_by_username = User.query.filter_by(username="student").first()
+        result += f"<h3>Student by username 'student':</h3>"
+        if student_by_username:
+            result += f"✓ Found!<br>"
+            result += f"  - Username: {student_by_username.username}<br>"
+            result += f"  - Email: {student_by_username.email}<br>"
+            
+            # Test password
+            test_pass = "S12345"
+            password_match = check_password_hash(student_by_username.password_hash, test_pass)
+            result += f"  - Password 'S12345' matches: {password_match}<br>"
+        else:
+            result += "✗ NOT FOUND<br>"
+        
+        # List all users
+        all_users = User.query.all()
+        result += f"<h3>All users in database ({len(all_users)}):</h3>"
+        for u in all_users:
+            result += f"  - ID: {u.id}, Username: {u.username}, Email: {u.email}, Role: {u.role}<br>"
+        
+        result += "<br><a href='/create-test-users'>Create test users</a>"
+        return result
+    except Exception as e:
+        return f"Error: {str(e)}<br><a href='/init-db'>Initialize database</a>"
 
 @app.route("/create-test-users")
 def create_test_users():
