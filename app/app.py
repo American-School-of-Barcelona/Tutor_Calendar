@@ -96,25 +96,22 @@ def hash_password(password: str) -> str:
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
+        email_or_username = request.form.get("email")  # Keep name as "email" for HTML
         password = request.form.get("password")
         
-        print(f"DEBUG: Attempting login with email: {email}")  
-        
-        user = User.query.filter_by(email=email).first()
+        # Try to find user by email first, then by username
+        user = User.query.filter_by(email=email_or_username).first()
+        if not user:
+            user = User.query.filter_by(username=email_or_username).first()
         
         if not user:
-            print(f"DEBUG: User not found")                 
-            flash("Invalid email or password", "error")
+            flash("Invalid email/username or password", "error")
             return redirect("/login")
         
-        print(f"DEBUG: User found: {user.email}, role: {user.role}")                            
-        
         password_match = check_password_hash(user.password_hash, password)
-        print(f"DEBUG: Password matches: {password_match}")  
         
-        if user and password_match:
-            # check if user is approved
+        if password_match:
+            # Check if user is approved
             if user.role == "student" and user.status != "approved":
                 flash("Your account is pending approval. Please wait for admin approval.", "error")
                 return redirect("/login")
@@ -128,7 +125,7 @@ def login():
             else:
                 return redirect("/student/dashboard")
 
-        flash("Invalid email or password", "error")
+        flash("Invalid email/username or password", "error")
         return redirect("/login")
     
     return render_template("login.html")
@@ -165,27 +162,27 @@ def debug_login():
 def create_test_users():
     """Create test users for development - REMOVE IN PRODUCTION"""
     
-    # Check if users already exist
-    admin = User.query.filter_by(email="admin@gmail.com").first()
-    student = User.query.filter_by(email="student@gmail.com").first()
-    
-    if admin:
-        return "Admin user already exists!"
-    if student:
-        return "Student user already exists!"
+    # Delete existing test users first (by username or email)
+    User.query.filter_by(username="admin").delete()
+    User.query.filter_by(username="student").delete()
+    User.query.filter_by(email="admin@tutomatics.com").delete()
+    User.query.filter_by(email="student@tutomatics.com").delete()
+    db.session.commit()
     
     # Create admin user
     admin_user = User(
-        email="admin@gmail.com",
-        password_hash=hash_password("admin"),
+        username="admin",
+        email="admin@tutomatics.com",
+        password_hash=hash_password("A12345"),
         role="admin",
         status="approved"
     )
     
     # Create student user
     student_user = User(
-        email="student@gmail.com",
-        password_hash=hash_password("student"),
+        username="student",
+        email="student@tutomatics.com",
+        password_hash=hash_password("S12345"),
         role="student",
         status="approved"
     )
@@ -194,7 +191,7 @@ def create_test_users():
     db.session.add(student_user)
     db.session.commit()
     
-    return "Test users created!<br>Admin: admin@gmail.com / admin<br>Student: student@gmail.com / student"
+    return "Test users created!<br>Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>Student: username 'student' or email 'student@tutomatics.com' / password: S12345"
 
 @app.route("/create-pending-student")
 def create_pending_student():
@@ -220,12 +217,13 @@ def signup():
     if request.method == "POST":
         name = request.form.get("name")
         lastname = request.form.get("lastname")
+        username = request.form.get("username")
         email = request.form.get("email")
         password = request.form.get("password")
         repeat_password = request.form.get("repeat_password")
         
         # Validation
-        if not all([name, lastname, email, password, repeat_password]):
+        if not all([name, lastname, username, email, password, repeat_password]):
             flash("All fields are required", "error")
             return redirect("/signup")
         
@@ -239,8 +237,15 @@ def signup():
             flash("Email already registered", "error")
             return redirect("/signup")
         
+        # Check if username already exists
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            flash("Username already taken", "error")
+            return redirect("/signup")
+        
         # Create new user with pending status
         new_user = User(
+            username=username,
             email=email,
             password_hash=hash_password(password),
             role="student",
