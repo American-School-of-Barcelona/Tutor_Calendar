@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template, session, redirect, u
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from helpers import login_required, admin_required, parse_email_input
 
 import os
 
@@ -95,39 +96,53 @@ def hash_password(password: str) -> str:
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Clear session on login attempt
+    session.clear()
+
     if request.method == "POST":
-        email_or_username = request.form.get("email")  # Keep name as "email" for HTML
+        raw_input = request.form.get("email")  # Can be email or username
         password = request.form.get("password")
-        
-        # Try to find user by email first, then by username
-        user = User.query.filter_by(email=email_or_username).first()
-        if not user:
-            user = User.query.filter_by(username=email_or_username).first()
-        
-        if not user:
+
+        if not raw_input or not password:
+            flash("You must complete all fields.", "error")
+            return render_template("login.html"), 400
+
+        # Try to parse as email first
+        try:
+            username, email = parse_email_input(raw_input)
+        except ValueError as e:
+            flash(str(e), "error")
+            return render_template("login.html"), 400
+
+        # Find user by email if we have one, otherwise by username
+        if email:
+            user = User.query.filter_by(email=email).first()
+        else:
+            user = User.query.filter_by(username=username).first()
+
+        # If still not found, try username from the raw input
+        if not user and username:
+            user = User.query.filter_by(username=username).first()
+
+        if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid email/username or password", "error")
+            return render_template("login.html"), 403
+
+        # Set session
+        session["user_id"] = user.id
+        session["user_role"] = user.role
+
+        # Check if student is approved
+        if user.role == "student" and user.status != "approved":
+            flash("Your account is pending approval. Please wait for admin approval.", "error")
             return redirect("/login")
-        
-        password_match = check_password_hash(user.password_hash, password)
-        
-        if password_match:
-            # Check if user is approved
-            if user.role == "student" and user.status != "approved":
-                flash("Your account is pending approval. Please wait for admin approval.", "error")
-                return redirect("/login")
-            
-            session["user_id"] = user.id
-            session["user_role"] = user.role
 
-            # Redirect based on role
-            if user.role == "admin":
-                return redirect("/admin/dashboard")
-            else:
-                return redirect("/student/dashboard")
+        # Redirect based on role
+        if user.role == "admin":
+            return redirect("/admin/dashboard")
+        else:
+            return redirect("/student/dashboard")
 
-        flash("Invalid email/username or password", "error")
-        return redirect("/login")
-    
     return render_template("login.html")
 
 @app.route("/debug-login")
@@ -224,20 +239,18 @@ def create_test_users():
     """Create test users for development - REMOVE IN PRODUCTION"""
     
     try:
-        # Delete ALL existing test users (by any method)
+        # Delete existing test users
         User.query.filter_by(username="admin").delete()
         User.query.filter_by(username="student").delete()
         User.query.filter_by(email="admin@tutomatics.com").delete()
         User.query.filter_by(email="student@tutomatics.com").delete()
-        User.query.filter_by(email="admin@gmail.com").delete()
-        User.query.filter_by(email="student@gmail.com").delete()
         db.session.commit()
         
         # Create admin user
         admin_user = User(
             username="admin",
             email="admin@tutomatics.com",
-            password_hash=hash_password("A12345"),
+            password_hash=generate_password_hash("A12345"),
             role="admin",
             status="approved"
         )
@@ -246,7 +259,7 @@ def create_test_users():
         student_user = User(
             username="student",
             email="student@tutomatics.com",
-            password_hash=hash_password("S12345"),
+            password_hash=generate_password_hash("S12345"),
             role="student",
             status="approved"
         )
@@ -255,31 +268,15 @@ def create_test_users():
         db.session.add(student_user)
         db.session.commit()
         
-        # Verify they were created
-        admin_check = User.query.filter_by(username="admin").first()
-        student_check = User.query.filter_by(username="student").first()
-        
-        result = "Test users created!<br><br>"
-        result += f"Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>"
-        result += f"Student: username 'student' or email 'student@tutomatics.com' / password: S12345<br><br>"
-        
-        if admin_check:
-            result += f"✓ Admin user verified in database<br>"
-        else:
-            result += f"✗ Admin user NOT found in database<br>"
-            
-        if student_check:
-            result += f"✓ Student user verified in database<br>"
-        else:
-            result += f"✗ Student user NOT found in database<br>"
-        
-        result += "<br><a href='/check-users'>Check users</a>"
-        return result
+        return "Test users created!<br>Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>Student: username 'student' or email 'student@tutomatics.com' / password: S12345"
     except Exception as e:
-        return f"Error creating users: {str(e)}"
+        return f"Error: {str(e)}"
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    # Clear session on signup
+    session.clear()
+
     if request.method == "POST":
         name = request.form.get("name")
         lastname = request.form.get("lastname")
@@ -287,43 +284,45 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
         repeat_password = request.form.get("repeat_password")
-        
+
         # Validation
         if not all([name, lastname, username, email, password, repeat_password]):
             flash("All fields are required", "error")
-            return redirect("/signup")
-        
+            return render_template("signup.html"), 400
+
         if password != repeat_password:
             flash("Passwords do not match", "error")
-            return redirect("/signup")
-        
+            return render_template("signup.html"), 400
+
         # Check if email already exists
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash("Email already registered", "error")
-            return redirect("/signup")
-        
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            flash("That email is already registered", "error")
+            return render_template("signup.html"), 400
+
         # Check if username already exists
         existing_username = User.query.filter_by(username=username).first()
         if existing_username:
-            flash("Username already taken", "error")
-            return redirect("/signup")
-        
-        # Create new user with pending status
+            flash("That username is already taken", "error")
+            return render_template("signup.html"), 400
+
+        # Create new user
+        hashed = generate_password_hash(password)
         new_user = User(
             username=username,
             email=email,
-            password_hash=hash_password(password),
+            password_hash=hashed,
             role="student",
             status="pending"
         )
-        
+
         db.session.add(new_user)
         db.session.commit()
-        
+
         # Show success message
         flash("Sign up request submitted! Check your email for an approval notification", "success")
         return redirect("/signup")
+
     return render_template("signup.html")
 
 @app.route("/init-db")
