@@ -223,55 +223,60 @@ def check_users():
 def create_test_users():
     """Create test users for development - REMOVE IN PRODUCTION"""
     
-    # Delete existing test users first (by username or email)
-    User.query.filter_by(username="admin").delete()
-    User.query.filter_by(username="student").delete()
-    User.query.filter_by(email="admin@tutomatics.com").delete()
-    User.query.filter_by(email="student@tutomatics.com").delete()
-    db.session.commit()
-    
-    # Create admin user
-    admin_user = User(
-        username="admin",
-        email="admin@tutomatics.com",
-        password_hash=hash_password("A12345"),
-        role="admin",
-        status="approved"
-    )
-    
-    # Create student user
-    student_user = User(
-        username="student",
-        email="student@tutomatics.com",
-        password_hash=hash_password("S12345"),
-        role="student",
-        status="approved"
-    )
-    
-    db.session.add(admin_user)
-    db.session.add(student_user)
-    db.session.commit()
-    
-    return "Test users created!<br>Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>Student: username 'student' or email 'student@tutomatics.com' / password: S12345"
-
-@app.route("/create-pending-student")
-def create_pending_student():
-    """Create a pending student for testing"""
-    pending = User.query.filter_by(email="pending@gmail.com").first()
-    if pending:
-        return "Pending student already exists!"
-    
-    pending_user = User(
-        email="pending@gmail.com",
-        password_hash=hash_password("pending"),
-        role="student",
-        status="pending"  # Not approved
-    )
-    
-    db.session.add(pending_user)
-    db.session.commit()
-    
-    return "Pending student created!<br>Email: pending@gmail.com / pending<br>Try logging in to see the approval message."
+    try:
+        # Delete ALL existing test users (by any method)
+        User.query.filter_by(username="admin").delete()
+        User.query.filter_by(username="student").delete()
+        User.query.filter_by(email="admin@tutomatics.com").delete()
+        User.query.filter_by(email="student@tutomatics.com").delete()
+        User.query.filter_by(email="admin@gmail.com").delete()
+        User.query.filter_by(email="student@gmail.com").delete()
+        db.session.commit()
+        
+        # Create admin user
+        admin_user = User(
+            username="admin",
+            email="admin@tutomatics.com",
+            password_hash=hash_password("A12345"),
+            role="admin",
+            status="approved"
+        )
+        
+        # Create student user
+        student_user = User(
+            username="student",
+            email="student@tutomatics.com",
+            password_hash=hash_password("S12345"),
+            role="student",
+            status="approved"
+        )
+        
+        db.session.add(admin_user)
+        db.session.add(student_user)
+        db.session.commit()
+        
+        # Verify they were created
+        admin_check = User.query.filter_by(username="admin").first()
+        student_check = User.query.filter_by(username="student").first()
+        
+        result = "Test users created!<br><br>"
+        result += f"Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>"
+        result += f"Student: username 'student' or email 'student@tutomatics.com' / password: S12345<br><br>"
+        
+        if admin_check:
+            result += f"✓ Admin user verified in database<br>"
+        else:
+            result += f"✗ Admin user NOT found in database<br>"
+            
+        if student_check:
+            result += f"✓ Student user verified in database<br>"
+        else:
+            result += f"✗ Student user NOT found in database<br>"
+        
+        result += "<br><a href='/check-users'>Check users</a>"
+        return result
+    except Exception as e:
+        return f"Error creating users: {str(e)}"
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
