@@ -1,6 +1,5 @@
 from flask import redirect, session
 from functools import wraps
-from models import User
 
 def login_required(f):
     """
@@ -22,6 +21,8 @@ def admin_required(f):
         if session.get("user_id") is None:
             return redirect("/login")
         
+        # Import User here to avoid circular imports
+        from app import User
         user = User.query.get(session.get("user_id"))
         if user is None or user.role != "admin":
             return redirect("/")
@@ -51,4 +52,5 @@ def parse_email_input(raw: str):
         email = value
         return username, email
 
+    # If no @, treat as username
     return value, None
