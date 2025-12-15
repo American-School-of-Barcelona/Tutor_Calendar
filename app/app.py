@@ -96,7 +96,7 @@ def hash_password(password: str) -> str:
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Clear session on login attempt
+    # Clear session first (like friend's system)
     session.clear()
 
     if request.method == "POST":
@@ -107,28 +107,28 @@ def login():
             flash("You must complete all fields.", "error")
             return render_template("login.html"), 400
 
-        # Try to parse as email first
+        # Parse input - get username and email
         try:
             username, email = parse_email_input(raw_input)
         except ValueError as e:
             flash(str(e), "error")
             return render_template("login.html"), 400
 
-        # Find user by email if we have one, otherwise by username
+        # Find user: try email first, then username
+        user = None
         if email:
             user = User.query.filter_by(email=email).first()
-        else:
-            user = User.query.filter_by(username=username).first()
-
-        # If still not found, try username from the raw input
+        
+        # If not found by email, try username
         if not user and username:
             user = User.query.filter_by(username=username).first()
 
+        # Check if user exists and password matches
         if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid email/username or password", "error")
             return render_template("login.html"), 403
 
-        # Set session
+        # Set session (use user.id, not user.user_id)
         session["user_id"] = user.id
         session["user_role"] = user.role
 
@@ -246,7 +246,7 @@ def create_test_users():
         User.query.filter_by(email="student@tutomatics.com").delete()
         db.session.commit()
         
-        # Create admin user
+        # Create admin user (exactly like friend's system)
         admin_user = User(
             username="admin",
             email="admin@tutomatics.com",
@@ -268,13 +268,32 @@ def create_test_users():
         db.session.add(student_user)
         db.session.commit()
         
-        return "Test users created!<br>Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>Student: username 'student' or email 'student@tutomatics.com' / password: S12345"
+        # Verify creation
+        admin_check = User.query.filter_by(username="admin").first()
+        student_check = User.query.filter_by(username="student").first()
+        
+        result = "Test users created!<br><br>"
+        result += "Admin: username 'admin' or email 'admin@tutomatics.com' / password: A12345<br>"
+        result += "Student: username 'student' or email 'student@tutomatics.com' / password: S12345<br><br>"
+        
+        if admin_check:
+            result += "✓ Admin user verified<br>"
+        else:
+            result += "✗ Admin user NOT found<br>"
+            
+        if student_check:
+            result += "✓ Student user verified<br>"
+        else:
+            result += "✗ Student user NOT found<br>"
+        
+        result += "<br><a href='/check-users'>Check users</a>"
+        return result
     except Exception as e:
         return f"Error: {str(e)}"
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    # Clear session on signup
+    # Clear session first (like friend's system)
     session.clear()
 
     if request.method == "POST":
@@ -294,6 +313,10 @@ def signup():
             flash("Passwords do not match", "error")
             return render_template("signup.html"), 400
 
+        # Normalize email to lowercase
+        email = email.lower().strip()
+        username = username.strip()
+
         # Check if email already exists
         existing_email = User.query.filter_by(email=email).first()
         if existing_email:
@@ -306,7 +329,7 @@ def signup():
             flash("That username is already taken", "error")
             return render_template("signup.html"), 400
 
-        # Create new user
+        # Create new user (exactly like friend's system)
         hashed = generate_password_hash(password)
         new_user = User(
             username=username,
@@ -324,36 +347,6 @@ def signup():
         return redirect("/signup")
 
     return render_template("signup.html")
-
-@app.route("/init-db")
-def init_db():
-    """Create database tables - REMOVE IN PRODUCTION"""
-    try:
-        db.create_all()
-        return "Database tables created successfully!<br><a href='/create-test-users'>Create test users</a>"
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-@app.route("/check-db")
-def check_db():
-    """Check database status"""
-    try:
-        # Try to query users
-        user_count = User.query.count()
-        admin = User.query.filter_by(email="admin@gmail.com").first()
-        
-        result = f"Database Status:<br>"
-        result += f"Total users: {user_count}<br>"
-        result += f"Admin user exists: {admin is not None}<br>"
-        
-        if admin:
-            result += f"Admin email: {admin.email}<br>"
-            result += f"Admin role: {admin.role}<br>"
-            result += f"Admin status: {admin.status}<br>"
-        
-        return result
-    except Exception as e:
-        return f"Database Error: {str(e)}<br><a href='/init-db'>Create tables first</a>"
 
 @app.route("/logout")
 
