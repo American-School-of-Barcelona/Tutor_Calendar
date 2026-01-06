@@ -1,4 +1,4 @@
-from flask import redirect, session, current_app
+from flask import redirect, session
 from functools import wraps
 
 def login_required(f):
@@ -15,11 +15,8 @@ def admin_required(f):
         if session.get("user_id") is None:
             return redirect("/login")
         
-        from app import db, User
-        with current_app.app_context():
-            user = User.query.get(session.get("user_id"))
-            if user is None or user.role != "admin":
-                return redirect("/")
+        if session.get("user_role") != "admin":
+            return redirect("/")
         
         return f(*args, **kwargs)
     return decorated_function

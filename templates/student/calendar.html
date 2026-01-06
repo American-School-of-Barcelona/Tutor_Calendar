@@ -10,25 +10,32 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">Student Calendar</h1>
+        <h1 class="dashboard-title">Student Calendar</h1>
+        
+        <div class="dashboard-nav-row">
+            <nav class="dashboard-tabs">
+                <a href="/student/home" class="tab-link">Home</a>
+                <a href="/student/calendar" class="tab-link active">Calendar View</a>
+                <a href="#" class="tab-link">Tab 3</a>
+                <a href="#" class="tab-link">Tab 4</a>
+            </nav>
             <a href="/logout" class="logout-button">Log out</a>
         </div>
         
-        <nav class="dashboard-tabs">
-            <a href="/student/home" class="tab-link">Home</a>
-            <a href="/student/calendar" class="tab-link active">Calendar View</a>
-            <a href="#" class="tab-link">Tab 3</a>
-            <a href="#" class="tab-link">Tab 4</a>
-        </nav>
-        
         <div class="dashboard-content">
+            <div class="week-navigation">
+                <button class="week-nav-arrow" id="prev-week">←</button>
+                <div class="week-display" id="week-display"></div>
+                <button class="week-nav-arrow" id="next-week">→</button>
+            </div>
+            
             <table id="calendar">
                 <thead>
-                    <tr>
-                        <th>Time</th>
+                    <tr id="calendar-header">
                     </tr>
                 </thead>
+                <tbody id="calendar-body">
+                </tbody>
             </table>
         </div>
     </div>
