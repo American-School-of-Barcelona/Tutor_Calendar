@@ -25,7 +25,12 @@ migrate = Migrate(app, db)
 def calendar_page():
     if "user_id" not in session:
         return redirect("/login")
-    return render_template("calendar.html")
+    
+    user = User.query.get(session["user_id"])
+    if user.role == "admin":
+        return redirect("/admin/dashboard")
+    else:
+        return redirect("/student/dashboard")
 
 # The route to handle date selection
 @app.route("/select_date", methods=["POST"])
@@ -349,6 +354,19 @@ def student_dashboard():
         return render_template("student/pending.html")
     
     return render_template("student/dashboard.html")
+
+@app.route("/admin/home")
+@admin_required
+def admin_home():
+    return render_template("home.html")
+
+@app.route("/student/home")
+@login_required
+def student_home():
+    user = User.query.get(session["user_id"])
+    if user.status != "approved":
+        return redirect("/student/dashboard")
+    return render_template("home.html")
 
 @app.route("/debug-login-step-by-step", methods=["GET", "POST"])
 def debug_login_step_by_step():

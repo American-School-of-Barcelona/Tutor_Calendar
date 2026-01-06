@@ -10,13 +10,16 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
-        <h1 class="dashboard-title">Admin Calendar</h1>
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Admin Calendar</h1>
+            <a href="/logout" class="logout-button">Log out</a>
+        </div>
         
         <nav class="dashboard-tabs">
-            <a href="/admin/requests" class="tab-link">Student Sign Up Requests</a>
+            <a href="/admin/home" class="tab-link">Home</a>
             <a href="/admin/calendar" class="tab-link active">Calendar View</a>
-            <a href="#" class="tab-link">Tab 3</a>
-            <a href="#" class="tab-link">Tab 4</a>
+            <a href="/admin/booking-approvals" class="tab-link">Booking Approvals</a>
+            <a href="/admin/signup-approvals" class="tab-link">Sign-up Approvals</a>
         </nav>
         
         <div class="dashboard-content">
@@ -27,10 +30,6 @@
                     </tr>
                 </thead>
             </table>
-        </div>
-        
-        <div class="dashboard-footer">
-            <a href="/logout">Logout</a>
         </div>
     </div>
     
