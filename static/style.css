@@ -327,8 +327,7 @@
     font-weight: 600;
     font-size: 16px;
     transition: background 150ms ease, transform 120ms ease;
-    border: none;
-    cursor: pointer;
+    white-space: nowrap;
 }
 
 .logout-button:hover {
@@ -348,20 +347,4 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-}
-
-.logout-button {
-    padding: 10px 20px;
-    border-radius: 12px;
-    background: #f1c27d;
-    color: #333333;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    transition: background 150ms ease, transform 120ms ease;
-}
-
-.logout-button:hover {
-    background: #f3b562;
-    transform: translateY(-1px);
 }
