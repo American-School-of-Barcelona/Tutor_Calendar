@@ -22,15 +22,12 @@ migrate = Migrate(app, db)
 
 # The homepage route which dispalys the calendar
 @app.route("/")
-def calendar_page():
-    if "user_id" not in session:
-        return redirect("/login")
-    
-    user = User.query.get(session["user_id"])
-    if user.role == "admin":
-        return redirect("/admin/dashboard")
-    else:
-        return redirect("/student/dashboard")
+def index():
+    return render_template("index.html")
+
+@app.route("/availability")
+def availability():
+    return render_template("availability.html")
 
 # The route to handle date selection
 @app.route("/select_date", methods=["POST"])
@@ -129,8 +126,6 @@ def login():
             return redirect("/admin/dashboard")
         else:
             return redirect("/student/dashboard")
-
-    return render_template("login.html")
 
 @app.route("/debug-login")
 def debug_login():
@@ -322,7 +317,7 @@ def signup():
         db.session.commit()
 
         flash("Sign up request submitted! Check your email for an approval notification", "success")
-        return redirect("/signup")
+        return redirect("/")
 
     return render_template("signup.html")
 
@@ -346,10 +341,11 @@ def deny_user(user_id):
         flash(f"User {user.username} has been denied and removed.", "info")
     return redirect("/admin/signup-approvals")
 
+
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect("/")
 
 @app.route("/admin/dashboard")
 def admin_dashboard():
@@ -381,7 +377,7 @@ def student_dashboard():
 @app.route("/admin/home")
 @admin_required
 def admin_home():
-    return render_template("home.html")
+    return render_template("index.html")
 
 @app.route("/student/home")
 @login_required
@@ -389,7 +385,7 @@ def student_home():
     user = User.query.get(session["user_id"])
     if user.status != "approved":
         return redirect("/student/dashboard")
-    return render_template("home.html")
+    return render_template("index.html")
 
 @app.route("/debug-login-step-by-step", methods=["GET", "POST"])
 def debug_login_step_by_step():
