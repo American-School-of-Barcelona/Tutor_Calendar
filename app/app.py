@@ -119,6 +119,7 @@ def login():
             return render_template("login.html"), 403
 
         session["user_id"] = user.id
+        session["user_role"] = user.role
 
         if user.role == "student" and user.status != "approved":
             flash("Your account is pending approval. Please wait for admin approval.", "error")
@@ -329,13 +330,15 @@ def signup():
 def logout():
     session.clear()
     return redirect("/login")
-#Run the app
-if __name__ == "__main__":
-    app.run(debug=True)
 
 @app.route("/admin/dashboard")
 def admin_dashboard():
-    if "user_id" not in session or session.get("user_role") != "admin":
+    if "user_id" not in session:
+        flash("Please log in to continue.", "error")
+        return redirect("/login")
+    
+    user = User.query.get(session["user_id"])
+    if user is None or user.role != "admin":
         flash("Access denied. Admin login required.", "error")
         return redirect("/login")
     
@@ -450,3 +453,6 @@ def student_calendar():
     if user.status != "approved":
         return redirect("/student/dashboard")
     return render_template("student/calendar.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)
