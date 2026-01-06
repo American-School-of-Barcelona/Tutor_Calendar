@@ -54,12 +54,14 @@ def select_date():
 from datetime import datetime
 
 class User(db.Model):
+    __tablename__ = "user"
+    
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=True)  
+    username = db.Column(db.String(80), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), nullable=False) 
-    status = db.Column(db.String(20), default="pending") 
+    role = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
 class Availability(db.Model):
@@ -99,43 +101,31 @@ def login():
     session.clear()
 
     if request.method == "POST":
-        raw_input = request.form.get("email")  # Can be email or username
+        raw_email = request.form.get("email")
         password = request.form.get("password")
 
-        if not raw_input or not password:
+        if not raw_email or not password:
             flash("You must complete all fields.", "error")
             return render_template("login.html"), 400
 
-        # Parse input - get username and email
         try:
-            username, email = parse_email_input(raw_input)
+            _, email = parse_email_input(raw_email)
         except ValueError as e:
             flash(str(e), "error")
             return render_template("login.html"), 400
 
-        user = None
-        if email:
-            user = User.query.filter_by(email=email).first()
-        
-        # If not found by email, try username
-        if not user and username:
-            user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
 
-        # Check if user exists and password matches
         if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid email/username or password", "error")
             return render_template("login.html"), 403
-        
-        # Set session variables
-        session["user_id"] = user.id
-        session["user_role"] = user.role
 
-        # Check if student is approved
+        session["user_id"] = user.id
+
         if user.role == "student" and user.status != "approved":
             flash("Your account is pending approval. Please wait for admin approval.", "error")
             return redirect("/login")
 
-        # Redirect based on role
         if user.role == "admin":
             return redirect("/admin/dashboard")
         else:
@@ -234,17 +224,13 @@ def check_users():
 
 @app.route("/create-test-users")
 def create_test_users():
-    """Create test users for development - REMOVE IN PRODUCTION"""
-    
     try:
-        # Delete existing test users
         User.query.filter_by(username="admin").delete()
         User.query.filter_by(username="student").delete()
         User.query.filter_by(email="admin@tutomatics.com").delete()
         User.query.filter_by(email="student@tutomatics.com").delete()
         db.session.commit()
         
-        # Create admin user (exactly like friend's system)
         admin_user = User(
             username="admin",
             email="admin@tutomatics.com",
@@ -253,7 +239,6 @@ def create_test_users():
             status="approved"
         )
         
-        # Create student user
         student_user = User(
             username="student",
             email="student@tutomatics.com",
@@ -266,7 +251,6 @@ def create_test_users():
         db.session.add(student_user)
         db.session.commit()
         
-        # Verify creation
         admin_check = User.query.filter_by(username="admin").first()
         student_check = User.query.filter_by(username="student").first()
         
@@ -291,44 +275,42 @@ def create_test_users():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    # Clear session first (like friend's system)
     session.clear()
 
     if request.method == "POST":
         name = request.form.get("name")
         lastname = request.form.get("lastname")
         username = request.form.get("username")
-        email = request.form.get("email")
+        raw_email = request.form.get("email")
         password = request.form.get("password")
         repeat_password = request.form.get("repeat_password")
 
-        # Validation
-        if not all([name, lastname, username, email, password, repeat_password]):
+        if not all([name, lastname, username, raw_email, password, repeat_password]):
             flash("All fields are required", "error")
+            return render_template("signup.html"), 400
+
+        try:
+            parsed_username, email = parse_email_input(raw_email)
+        except ValueError as e:
+            flash(str(e), "error")
             return render_template("signup.html"), 400
 
         if password != repeat_password:
             flash("Passwords do not match", "error")
             return render_template("signup.html"), 400
 
-        # Normalize email to lowercase
-        email = email.lower().strip()
-        username = username.strip()
-
-        # Check if email already exists
         existing_email = User.query.filter_by(email=email).first()
-        if existing_email:
+        if existing_email is not None:
             flash("That email is already registered", "error")
             return render_template("signup.html"), 400
 
-        # Check if username already exists
         existing_username = User.query.filter_by(username=username).first()
-        if existing_username:
+        if existing_username is not None:
             flash("That username is already taken", "error")
             return render_template("signup.html"), 400
 
-        # Create new user (exactly like friend's system)
         hashed = generate_password_hash(password)
+
         new_user = User(
             username=username,
             email=email,
@@ -340,7 +322,6 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        # Show success message
         flash("Sign up request submitted! Check your email for an approval notification", "success")
         return redirect("/signup")
 
@@ -376,3 +357,73 @@ def student_dashboard():
         return render_template("student/pending.html")
     
     return render_template("student/dashboard.html")
+
+@app.route("/debug-login-step-by-step", methods=["GET", "POST"])
+def debug_login_step_by_step():
+    """Debug route to see exactly what happens at each login step"""
+    result = "<h2>Login Debug - Step by Step</h2>"
+    
+    if request.method == "POST":
+        raw_input = request.form.get("email")
+        password = request.form.get("password")
+        
+        result += f"<h3>Step 1: Raw Input</h3>"
+        result += f"Raw input received: '{raw_input}'<br>"
+        result += f"Password received: '{password}'<br><br>"
+        
+        result += f"<h3>Step 2: Parse Email Input</h3>"
+        try:
+            username, email = parse_email_input(raw_input)
+            result += f"✓ Parsed successfully<br>"
+            result += f"  Username returned: '{username}'<br>"
+            result += f"  Email returned: '{email}'<br><br>"
+        except ValueError as e:
+            result += f"✗ Parse failed: {str(e)}<br>"
+            return result
+        
+        result += f"<h3>Step 3: Database Query</h3>"
+        user_by_email = User.query.filter_by(email=email).first()
+        if user_by_email:
+            result += f"✓ User found by email '{email}'<br>"
+            result += f"  User ID: {user_by_email.id}<br>"
+            result += f"  Username: {user_by_email.username}<br>"
+            result += f"  Email: {user_by_email.email}<br>"
+            result += f"  Password hash: {user_by_email.password_hash[:50]}...<br><br>"
+        else:
+            result += f"✗ No user found with email '{email}'<br>"
+            result += f"<br>Trying username query...<br>"
+            user_by_username = User.query.filter_by(username=username).first()
+            if user_by_username:
+                result += f"✓ User found by username '{username}'<br>"
+                result += f"  User email in DB: '{user_by_username.email}'<br>"
+                result += f"  Expected email: '{email}'<br>"
+                result += f"  Match? {user_by_username.email.lower() == email.lower()}<br>"
+            else:
+                result += f"✗ No user found with username '{username}'<br>"
+            return result
+        
+        result += f"<h3>Step 4: Password Verification</h3>"
+        password_match = check_password_hash(user_by_email.password_hash, password)
+        result += f"Password match result: {password_match}<br>"
+        
+        if password_match:
+            result += f"<h3>✓ SUCCESS - Login should work!</h3>"
+        else:
+            result += f"<h3>✗ FAILED - Password doesn't match</h3>"
+            result += f"Testing with different passwords:<br>"
+            test_passwords = ["A12345", "admin", "S12345", "student"]
+            for test_pwd in test_passwords:
+                test_match = check_password_hash(user_by_email.password_hash, test_pwd)
+                result += f"  '{test_pwd}': {test_match}<br>"
+    
+    else:
+        result += """
+        <form method="POST">
+            <input type="text" name="email" placeholder="Email or Username" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <button type="submit">Debug Login</button>
+        </form>
+        """
+    
+    result += "<br><br><a href='/check-users'>Check all users</a>"
+    return result
