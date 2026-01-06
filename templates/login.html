@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="auth-body">
+    {% include 'partials/nav.html' %}
+    
     <div class="auth-wrapper">
         <div class="auth-card">
             <h1 class="auth-title">Tutomatics</h1>
@@ -33,7 +35,10 @@
                     <input id="password" name="password" type="password" required>
                 </div>
 
-                <button type="submit" class="auth-button">Log In</button>
+                <div class="auth-button-row">
+                    <a href="/" class="auth-back-button">←</a>
+                    <button type="submit" class="auth-button">Log In</button>
+                </div>
             </form>
 
             <div class="auth-links">

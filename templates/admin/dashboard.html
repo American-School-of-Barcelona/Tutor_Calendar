@@ -9,17 +9,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="dashboard-body">
+    {% include 'partials/nav.html' %}
+    
     <div class="dashboard-container">
         <h1 class="dashboard-title">Admin Dashboard</h1>
         
         <div class="dashboard-nav-row">
             <nav class="dashboard-tabs">
-                <a href="/admin/home" class="tab-link active">Home</a>
+                <a href="/admin/home" class="tab-link">Home</a>
                 <a href="/admin/calendar" class="tab-link">Calendar View</a>
                 <a href="/admin/booking-approvals" class="tab-link">Booking Approvals</a>
                 <a href="/admin/signup-approvals" class="tab-link">Sign-up Approvals</a>
             </nav>
-            <a href="/logout" class="logout-button">Log out</a>
         </div>
         
         <div class="dashboard-content">

@@ -9,34 +9,37 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="auth-body">
+    {% include 'partials/nav.html' %}
+    
     <div class="auth-wrapper">
         <div class="auth-card">
             <h1 class="auth-title">Tutomatics</h1>
-            <p class="auth-subtitle">Create your student account</p>
+            <p class="auth-subtitle">Create your account</p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        {% if category == "error" %}
-                            <div class="auth-error">{{ message }}</div>
-                        {% elif category == "success" %}
-                            <div class="auth-success" id="success-message">{{ message }}</div>
-                        {% endif %}
+                        <div class="auth-{{ category }}">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" class="auth-form" id="signup-form">
+            <form method="POST" class="auth-form">
                 <div class="auth-field">
                     <label for="name">First Name</label>
                     <input id="name" name="name" type="text" required>
                 </div>
-                
+
+                <div class="auth-field">
+                    <label for="lastname">Last Name</label>
+                    <input id="lastname" name="lastname" type="text" required>
+                </div>
+
                 <div class="auth-field">
                     <label for="username">Username</label>
                     <input id="username" name="username" type="text" required>
                 </div>
-                
+
                 <div class="auth-field">
                     <label for="email">Email</label>
                     <input id="email" name="email" type="email" required>
@@ -46,41 +49,22 @@
                     <label for="password">Password</label>
                     <input id="password" name="password" type="password" required>
                 </div>
-                
+
                 <div class="auth-field">
                     <label for="repeat_password">Repeat Password</label>
                     <input id="repeat_password" name="repeat_password" type="password" required>
                 </div>
 
-                <button type="submit" class="auth-button">Sign Up</button>
+                <div class="auth-button-row">
+                    <a href="/" class="auth-back-button">←</a>
+                    <button type="submit" class="auth-button">Sign Up</button>
+                </div>
             </form>
 
             <div class="auth-links">
-                <a href="/login">Already have an account? Log in</a>
+                <a href="/login">Already have an account? Log in now!</a>
             </div>
         </div>
     </div>
-
-    <!-- Success Modal -->
-    <div class="modal-overlay" id="success-modal" style="display: none;">
-        <div class="modal-content">
-            <h2>Sign up request submitted!</h2>
-            <p>Check your email for an approval notification</p>
-            <button onclick="closeModal()" class="modal-button">OK</button>
-        </div>
-    </div>
-
-    <script>
-        // Show modal if success message exists
-        const successMessage = document.getElementById('success-message');
-        if (successMessage) {
-            document.getElementById('success-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('success-modal').style.display = 'none';
-            window.location.href = '/login';
-        }
-    </script>
 </body>
 </html>

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="dashboard-body">
+    {% include 'partials/nav.html' %}
+    
     <div class="dashboard-container">
         <h1 class="dashboard-title">Student Calendar</h1>
         
@@ -19,7 +21,6 @@
                 <a href="#" class="tab-link">Tab 3</a>
                 <a href="#" class="tab-link">Tab 4</a>
             </nav>
-            <a href="/logout" class="logout-button">Log out</a>
         </div>
         
         <div class="dashboard-content">

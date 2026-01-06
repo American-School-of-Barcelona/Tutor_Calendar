@@ -1,0 +1,17 @@
+<nav class="top-navigation">
+    <div class="nav-container">
+        <div class="nav-logo">
+            <a href="/">Tutomatics</a>
+        </div>
+        <div class="nav-tabs">
+            <a href="/availability" class="nav-tab">See Availability</a>
+            {% if session.user_id %}
+                <a href="{% if session.user_role == 'admin' %}/admin/dashboard{% else %}/student/dashboard{% endif %}" class="nav-tab">Dashboard</a>
+                <a href="/logout" class="nav-tab">Logout</a>
+            {% else %}
+                <a href="/signup" class="nav-tab">Signup</a>
+                <a href="/login" class="nav-tab">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
