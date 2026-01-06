@@ -96,7 +96,6 @@ def hash_password(password: str) -> str:
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Clear session first (like friend's system)
     session.clear()
 
     if request.method == "POST":
@@ -114,7 +113,6 @@ def login():
             flash(str(e), "error")
             return render_template("login.html"), 400
 
-        # Find user: try email first, then username
         user = None
         if email:
             user = User.query.filter_by(email=email).first()
@@ -127,8 +125,8 @@ def login():
         if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid email/username or password", "error")
             return render_template("login.html"), 403
-
-        # Set session (use user.id, not user.user_id)
+        
+        # Set session variables
         session["user_id"] = user.id
         session["user_role"] = user.role
 
