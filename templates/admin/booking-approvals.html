@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Approvals - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">Admin Dashboard</h1>
+        
+        <div class="dashboard-nav-row">
+            <nav class="dashboard-tabs">
+                <a href="/admin/home" class="tab-link">Home</a>
+                <a href="/admin/calendar" class="tab-link">Calendar View</a>
+                <a href="/admin/booking-approvals" class="tab-link active">Booking Approvals</a>
+                <a href="/admin/signup-approvals" class="tab-link">Sign-up Approvals</a>
+            </nav>
+            <a href="/logout" class="logout-button">Log out</a>
+        </div>
+        
+        <div class="dashboard-content">
+            <h2>Booking Approvals</h2>
+            <p>Pending booking requests will appear here.</p>
+        </div>
+    </div>
+</body>
+</html>

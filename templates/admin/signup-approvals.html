@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign-up Approvals - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">Admin Dashboard</h1>
+        
+        <div class="dashboard-nav-row">
+            <nav class="dashboard-tabs">
+                <a href="/admin/home" class="tab-link">Home</a>
+                <a href="/admin/calendar" class="tab-link">Calendar View</a>
+                <a href="/admin/booking-approvals" class="tab-link">Booking Approvals</a>
+                <a href="/admin/signup-approvals" class="tab-link active">Sign-up Approvals</a>
+            </nav>
+            <a href="/logout" class="logout-button">Log out</a>
+        </div>
+        
+        <div class="dashboard-content">
+            <h2>Student Sign-up Requests</h2>
+            {% if pending_users %}
+                <div class="pending-users-list">
+                    {% for user in pending_users %}
+                        <div class="user-request-card">
+                            <div class="user-info">
+                                <p><strong>Name:</strong> {{ user.username }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Requested:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                            <div class="user-actions">
+                                <form method="POST" action="/admin/approve-user/{{ user.id }}" style="display: inline;">
+                                    <button type="submit" class="approve-button">Approve</button>
+                                </form>
+                                <form method="POST" action="/admin/deny-user/{{ user.id }}" style="display: inline;">
+                                    <button type="submit" class="deny-button">Deny</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No pending sign-up requests.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

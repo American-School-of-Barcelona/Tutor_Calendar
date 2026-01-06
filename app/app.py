@@ -326,6 +326,26 @@ def signup():
 
     return render_template("signup.html")
 
+@app.route("/admin/approve-user/<int:user_id>", methods=["POST"])
+@admin_required
+def approve_user(user_id):
+    user = User.query.get(user_id)
+    if user and user.status == "pending":
+        user.status = "approved"
+        db.session.commit()
+        flash(f"User {user.username} has been approved.", "success")
+    return redirect("/admin/signup-approvals")
+
+@app.route("/admin/deny-user/<int:user_id>", methods=["POST"])
+@admin_required
+def deny_user(user_id):
+    user = User.query.get(user_id)
+    if user and user.status == "pending":
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"User {user.username} has been denied and removed.", "info")
+    return redirect("/admin/signup-approvals")
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -453,6 +473,17 @@ def student_calendar():
     if user.status != "approved":
         return redirect("/student/dashboard")
     return render_template("student/calendar.html")
+
+@app.route("/admin/booking-approvals")
+@admin_required
+def admin_booking_approvals():
+    return render_template("admin/booking-approvals.html")
+
+@app.route("/admin/signup-approvals")
+@admin_required
+def admin_signup_approvals():
+    pending_users = User.query.filter_by(status="pending").all()
+    return render_template("admin/signup-approvals.html", pending_users=pending_users)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,10 +1,7 @@
-from flask import redirect, session
+from flask import redirect, session, current_app
 from functools import wraps
 
 def login_required(f):
-    """
-    Decorate routes to require login.
-    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
@@ -18,20 +15,16 @@ def admin_required(f):
         if session.get("user_id") is None:
             return redirect("/login")
         
-        from app import User
-        user = User.query.get(session.get("user_id"))
-        if user is None or user.role != "admin":
-            return redirect("/")
+        from app import db, User
+        with current_app.app_context():
+            user = User.query.get(session.get("user_id"))
+            if user is None or user.role != "admin":
+                return redirect("/")
         
         return f(*args, **kwargs)
     return decorated_function
 
 def parse_email_input(raw: str):
-    """
-    Accepts username or full email
-    Returns username, email (email is always returned)
-    If input is username, constructs email from it
-    """
     if raw is None:
         raise ValueError("email is required")
 
