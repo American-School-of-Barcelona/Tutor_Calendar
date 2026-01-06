@@ -20,13 +20,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Function to provide data for the calendar html template
-def get_calendar_data():
-    week_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    months = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"]
-    return render_template("calendar.html", week_days=week_days, months=months)
-
 # The homepage route which dispalys the calendar
 @app.route("/")
 def calendar_page():
@@ -328,10 +321,9 @@ def signup():
     return render_template("signup.html")
 
 @app.route("/logout")
-
 def logout():
     session.clear()
-    return redirect(url_for("login"))
+    return redirect("/login")
 #Run the app
 if __name__ == "__main__":
     app.run(debug=True)
@@ -427,3 +419,16 @@ def debug_login_step_by_step():
     
     result += "<br><br><a href='/check-users'>Check all users</a>"
     return result
+
+@app.route("/admin/calendar")
+@admin_required
+def admin_calendar():
+    return render_template("admin/calendar.html")
+
+@app.route("/student/calendar")
+@login_required
+def student_calendar():
+    user = User.query.get(session["user_id"])
+    if user.status != "approved":
+        return redirect("/student/dashboard")
+    return render_template("student/calendar.html")
