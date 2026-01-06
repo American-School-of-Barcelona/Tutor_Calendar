@@ -13,15 +13,11 @@ def login_required(f):
     return decorated_function
 
 def admin_required(f):
-    """
-    Decorate routes to require admin login.
-    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
             return redirect("/login")
         
-        # Import User here to avoid circular imports
         from app import User
         user = User.query.get(session.get("user_id"))
         if user is None or user.role != "admin":
@@ -32,25 +28,28 @@ def admin_required(f):
 
 def parse_email_input(raw: str):
     """
-    Parse email input - accepts username or full email
-    Returns username, email
-    For your system, we'll allow any email domain
+    Accepts username or full email
+    Returns username, email (email is always returned)
+    If input is username, constructs email from it
     """
     if raw is None:
-        raise ValueError("Email is required")
+        raise ValueError("email is required")
 
     value = raw.strip()
     if not value:
-        raise ValueError("Email is required")
+        raise ValueError("email is required")
 
-    # If it contains @, it's a full email
     if "@" in value:
         parts = value.split("@")
         if len(parts) != 2 or not parts[0] or not parts[1]:
             raise ValueError("Invalid email format")
         username = parts[0]
-        email = value
+        email = value.lower()
         return username, email
 
-    # If no @, treat as username
-    return value, None
+    if "@" in value or " " in value:
+        raise ValueError("Invalid email format")
+
+    username = value
+    email = f"{value}@tutomatics.com"
+    return username, email
