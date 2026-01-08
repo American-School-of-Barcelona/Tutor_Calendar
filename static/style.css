@@ -650,3 +650,13 @@
     color: #155724;
     font-size: 13px;
 }
+
+.nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-tab {
+    margin-left: auto; /* logout button to the right */
+}
