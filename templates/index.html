@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="home-body">
-    {% if not current_user.is_authenticated %}
+    {% include 'partials/nav.html' %}
     
     <div class="hero-section">
         <div class="hero-content">
@@ -19,7 +19,7 @@
                 <span class="hero-title-white">ON TEACHING</span>
             </h1>
             <p class="hero-subtitle">Get started with Tutomatics and streamline your tutoring schedule.</p>
-            {% if not session.user_id %}
+            {% if not current_user.is_authenticated %}
             <a href="/signup" class="hero-cta-button">SIGN UP FREE</a>
             {% endif %}
         </div>
