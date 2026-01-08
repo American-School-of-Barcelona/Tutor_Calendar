@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request, render_template, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from helpers import login_required, admin_required, parse_email_input
+from helpers import admin_required, parse_email_input
 
 import os
 
@@ -19,6 +20,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # Redirect to login if not authenticated
+login_manager.login_message = "Please log in to access this page."
+login_manager.login_message_category = "error"
+
+# User loader function
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # The homepage route which dispalys the calendar
 @app.route("/")
@@ -47,8 +60,9 @@ def select_date():
                     "time": time, "day": day, "month": month, "year": year})
 
 from datetime import datetime
+from flask_login import UserMixin
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "user"
     
     id = db.Column(db.Integer, primary_key=True)
@@ -93,7 +107,12 @@ def hash_password(password: str) -> str:
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    session.clear()
+    # If user is already logged in, redirect to their dashboard
+    if current_user.is_authenticated:
+        if current_user.role == "admin":
+            return redirect("/admin/dashboard")
+        else:
+            return redirect("/student/dashboard")
 
     if request.method == "POST":
         raw_email = request.form.get("email")
@@ -110,22 +129,30 @@ def login():
             return render_template("login.html"), 400
 
         user = User.query.filter_by(email=email).first()
+        
+        # If not found by email, try username
+        if not user:
+            username, _ = parse_email_input(raw_email)
+            user = User.query.filter_by(username=username).first()
 
         if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid email/username or password", "error")
             return render_template("login.html"), 403
 
-        session["user_id"] = user.id
-        session["user_role"] = user.role
-
+        # Check if student is approved
         if user.role == "student" and user.status != "approved":
             flash("Your account is pending approval. Please wait for admin approval.", "error")
-            return redirect("/login")
+            return render_template("login.html")
 
+        # Log the user in using Flask-Login
+        login_user(user)
+        
         if user.role == "admin":
             return redirect("/admin/dashboard")
         else:
             return redirect("/student/dashboard")
+
+    return render_template("login.html")
 
 @app.route("/debug-login")
 def debug_login():
@@ -269,8 +296,7 @@ def create_test_users():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    session.clear()
-
+    
     if request.method == "POST":
         name = request.form.get("name")
         lastname = request.form.get("lastname")
@@ -343,33 +369,26 @@ def deny_user(user_id):
 
 
 @app.route("/logout")
+@login_required
 def logout():
-    session.clear()
+    logout_user()
+    flash("You have been logged out.", "info")
     return redirect("/")
 
 @app.route("/admin/dashboard")
+@login_required
 def admin_dashboard():
-    if "user_id" not in session:
-        flash("Please log in to continue.", "error")
-        return redirect("/login")
-    
-    user = User.query.get(session["user_id"])
-    if user is None or user.role != "admin":
+    if current_user.role != "admin":
         flash("Access denied. Admin login required.", "error")
         return redirect("/login")
     
     return render_template("admin/dashboard.html")
 
 @app.route("/student/dashboard")
+@login_required
 def student_dashboard():
-    if "user_id" not in session:
-        flash("Please log in to continue.", "error")
-        return redirect("/login")
-    
-    user = User.query.get(session["user_id"])
-    
     # Check if student is approved
-    if user.status != "approved":
+    if current_user.status != "approved":
         return render_template("student/pending.html")
     
     return render_template("student/dashboard.html")
@@ -382,8 +401,7 @@ def admin_home():
 @app.route("/student/home")
 @login_required
 def student_home():
-    user = User.query.get(session["user_id"])
-    if user.status != "approved":
+    if current_user.status != "approved":
         return redirect("/student/dashboard")
     return render_template("index.html")
 
@@ -465,8 +483,7 @@ def admin_calendar():
 @app.route("/student/calendar")
 @login_required
 def student_calendar():
-    user = User.query.get(session["user_id"])
-    if user.status != "approved":
+    if current_user.status != "approved":
         return redirect("/student/dashboard")
     return render_template("student/calendar.html")
 

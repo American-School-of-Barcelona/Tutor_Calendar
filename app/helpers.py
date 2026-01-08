@@ -1,21 +1,16 @@
-from flask import redirect, session
+from flask import redirect, flash
+from flask_login import current_user
 from functools import wraps
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-    return decorated_function
 
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
+        if not current_user.is_authenticated:
+            flash("Please log in to access this page.", "error")
             return redirect("/login")
         
-        if session.get("user_role") != "admin":
+        if current_user.role != "admin":
+            flash("Access denied. Admin login required.", "error")
             return redirect("/")
         
         return f(*args, **kwargs)
