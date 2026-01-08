@@ -296,8 +296,15 @@ def create_test_users():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    # If user is already logged in, redirect to their dashboard
+    if current_user.is_authenticated:
+        if current_user.role == "admin":
+            return redirect("/admin/dashboard")
+        else:
+            return redirect("/student/dashboard")
     
     if request.method == "POST":
+        # ... rest of signup logic
         name = request.form.get("name")
         lastname = request.form.get("lastname")
         username = request.form.get("username")

@@ -4,11 +4,19 @@
             <a href="/">Tutomatics</a>
         </div>
         <div class="nav-tabs">
-            <a href="/availability" class="nav-tab">See Availability</a>
-            {% if session.user_id %}
-                <a href="{% if session.user_role == 'admin' %}/admin/dashboard{% else %}/student/dashboard{% endif %}" class="nav-tab">Dashboard</a>
-                <a href="/logout" class="nav-tab">Logout</a>
+            {% if current_user.is_authenticated %}
+                <a href="{% if current_user.role == 'admin' %}/admin/home{% else %}/student/home{% endif %}" class="nav-tab">Home</a>
+                <a href="{% if current_user.role == 'admin' %}/admin/calendar{% else %}/student/calendar{% endif %}" class="nav-tab">Calendar View</a>
+                {% if current_user.role == 'admin' %}
+                    <a href="/admin/booking-approvals" class="nav-tab">Booking Approvals</a>
+                    <a href="/admin/signup-approvals" class="nav-tab">Sign-up Approvals</a>
+                {% else %}
+                    <a href="#" class="nav-tab">Tab 3</a>
+                    <a href="#" class="nav-tab">Tab 4</a>
+                {% endif %}
+                <a href="/logout" class="nav-tab logout-tab">Logout</a>
             {% else %}
+                <a href="/availability" class="nav-tab">See Availability</a>
                 <a href="/signup" class="nav-tab">Signup</a>
                 <a href="/login" class="nav-tab">Login</a>
             {% endif %}
