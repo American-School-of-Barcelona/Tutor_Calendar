@@ -485,17 +485,124 @@ def debug_login_step_by_step():
     result += "<br><br><a href='/check-users'>Check all users</a>"
     return result
 
-@app.route("/admin/calendar")
-@admin_required
-def admin_calendar():
-    return render_template("admin/calendar.html")
-
 @app.route("/student/calendar")
 @login_required
 def student_calendar():
     if current_user.status != "approved":
         return redirect("/student/dashboard")
     return render_template("student/calendar.html")
+
+@app.route("/student/bookings")
+@login_required
+def student_bookings():
+    """
+    Student's upcoming bookings page (pending and accepted).
+    """
+    if current_user.status != "approved":
+        return redirect("/student/dashboard")
+    return render_template("student/bookings.html")
+
+@app.route("/student/history")
+@login_required
+def student_history():
+    """
+    Student's past bookings history page.
+    """
+    if current_user.status != "approved":
+        return redirect("/student/dashboard")
+    return render_template("student/history.html")
+
+@app.route("/api/student/bookings")
+@login_required
+def student_bookings_api():
+    """
+    Get current user's upcoming bookings (pending and accepted).
+    """
+    if current_user.status != "approved":
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    now = datetime.utcnow()
+    bookings = Booking.query.filter(
+        Booking.student_id == current_user.id,
+        Booking.end_time >= now,
+        Booking.status.in_(["pending", "accepted"])
+    ).order_by(Booking.start_time.asc()).all()
+    
+    bookings_data = []
+    for booking in bookings:
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'lesson_minutes': booking.lesson_minutes,
+            'price_eur': booking.price_eur,
+            'status': booking.status,
+            'created_at': booking.created_at.isoformat()
+        })
+    
+    return jsonify({"success": True, "bookings": bookings_data})
+
+@app.route("/api/student/history")
+@login_required
+def student_history_api():
+    """
+    Get current user's past bookings.
+    """
+    if current_user.status != "approved":
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    now = datetime.utcnow()
+    bookings = Booking.query.filter(
+        Booking.student_id == current_user.id,
+        Booking.end_time < now
+    ).order_by(Booking.start_time.desc()).all()
+    
+    bookings_data = []
+    for booking in bookings:
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'lesson_minutes': booking.lesson_minutes,
+            'price_eur': booking.price_eur,
+            'status': booking.status,
+            'created_at': booking.created_at.isoformat()
+        })
+    
+    return jsonify({"success": True, "bookings": bookings_data})
+
+@app.route("/student/bookings/<int:booking_id>/cancel", methods=["POST"])
+@login_required
+def cancel_booking(booking_id):
+    """
+    Cancel a pending booking (students can only cancel pending bookings).
+    """
+    if current_user.status != "approved":
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    booking = Booking.query.get(booking_id)
+    
+    if not booking:
+        return jsonify({"success": False, "error": "Booking not found"}), 404
+    
+    if booking.student_id != current_user.id:
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    if booking.status != "pending":
+        return jsonify({"success": False, "error": f"Cannot cancel booking with status: {booking.status}"}), 400
+    
+    booking.status = "cancelled"
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "message": "Booking cancelled successfully"
+    })
+
+@app.route("/admin/calendar")
+@admin_required
+def admin_calendar():
+    return render_template("admin/calendar.html")
 
 @app.route("/admin/booking-approvals")
 @admin_required

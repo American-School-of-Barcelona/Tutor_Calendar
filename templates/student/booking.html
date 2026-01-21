@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    {% include 'partials/nav.html' %}
+    
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">My Bookings</h1>
+        
+        <div class="dashboard-nav-row">
+            <nav class="dashboard-tabs">
+                <a href="/student/home" class="tab-link">Home</a>
+                <a href="/student/calendar" class="tab-link">Calendar View</a>
+                <a href="/student/bookings" class="tab-link active">My Bookings</a>
+                <a href="/student/history" class="tab-link">History</a>
+            </nav>
+        </div>
+        
+        <div class="dashboard-content">
+            <div id="bookings-loading" class="bookings-loading">Loading your bookings...</div>
+            <div id="bookings-empty" class="bookings-empty" style="display: none;">
+                <p>You have no upcoming bookings.</p>
+                <p><a href="/student/calendar" style="color: #f1c27d; text-decoration: underline;">Book a lesson now</a></p>
+            </div>
+            
+            <div id="bookings-list" class="student-bookings-list"></div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='student-bookings.js') }}"></script>
+</body>
+</html>

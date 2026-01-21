@@ -999,3 +999,137 @@
 .booking-action-btn:active {
     transform: translateY(0);
 }
+
+/* Student Bookings Styles */
+.student-bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.student-booking-item {
+    background: #fff8ec;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border: 1px solid #e0d2bc;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.student-booking-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.student-booking-item-history {
+    opacity: 0.85;
+}
+
+.student-booking-info {
+    flex: 1;
+}
+
+.student-booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.student-booking-date {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333333;
+    margin: 0;
+}
+
+.booking-status-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-accepted {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-denied {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-cancelled {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.student-booking-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.student-booking-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.student-booking-detail-label {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.student-booking-detail-value {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    color: #333333;
+}
+
+.student-booking-price {
+    font-weight: 700;
+    color: #e0a85c;
+}
+
+.student-booking-actions {
+    margin-left: 24px;
+}
+
+.student-booking-cancel-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid #ffcdd2;
+    background: #fff8ec;
+    color: #c62828;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease, transform 120ms ease;
+}
+
+.student-booking-cancel-btn:hover {
+    background: #ffcdd2;
+    transform: translateY(-1px);
+}
+
+.student-booking-cancel-btn:active {
+    transform: translateY(0);
+}
