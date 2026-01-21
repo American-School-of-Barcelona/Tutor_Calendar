@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color
 
 import os
@@ -509,3 +510,86 @@ def admin_signup_approvals():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/api/book-slot", methods=["POST"])
+@login_required
+def book_slot():
+    """
+    Create a booking request for a student.
+    Requires: student must be logged in and approved.
+    """
+    if current_user.role != "student" or current_user.status != "approved":
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "No data provided"}), 400
+    
+    start_time_str = data.get("start_time")
+    lesson_minutes = data.get("lesson_minutes")
+    
+    if not start_time_str or not lesson_minutes:
+        return jsonify({"success": False, "error": "Missing required fields"}), 400
+    
+    try:
+        start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+        if start_time.tzinfo:
+            start_time = start_time.replace(tzinfo=None)
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid date format"}), 400
+    
+    # Validate duration
+    if lesson_minutes < 120 or lesson_minutes > 240:
+        return jsonify({"success": False, "error": "Duration must be between 2 and 4 hours"}), 400
+    
+    if lesson_minutes % 60 != 0:
+        return jsonify({"success": False, "error": "Duration must be in 1-hour increments"}), 400
+    
+    # Check if booking is in the future
+    if start_time < datetime.utcnow():
+        return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
+    
+    # Calculate end time
+    end_time = start_time.replace(minute=start_time.minute + lesson_minutes)
+    
+    # Calculate price
+    try:
+        price_eur = calculate_price(lesson_minutes)
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+    
+    # Get tutor/admin (for now, assume there's one admin/tutor)
+    tutor = User.query.filter_by(role="admin").first()
+    if not tutor:
+        return jsonify({"success": False, "error": "No tutor available"}), 500
+    
+    # Check for conflicts with accepted bookings
+    conflicting_bookings = Booking.query.filter(
+        Booking.tutor_id == tutor.id,
+        Booking.status == "accepted",
+        Booking.start_time < end_time,
+        Booking.end_time > start_time
+    ).first()
+    
+    if conflicting_bookings:
+        return jsonify({"success": False, "error": "This time slot is already booked"}), 400
+    
+    # Create booking
+    new_booking = Booking(
+        student_id=current_user.id,
+        tutor_id=tutor.id,
+        start_time=start_time,
+        end_time=end_time,
+        lesson_minutes=lesson_minutes,
+        price_eur=price_eur,
+        status="pending"
+    )
+    
+    db.session.add(new_booking)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "booking_id": new_booking.id,
+        "message": "Booking request submitted successfully"
+    }), 201

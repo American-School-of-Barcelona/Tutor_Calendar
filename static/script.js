@@ -161,6 +161,118 @@ function checkPastSlots() {
     });
 }
 
+let currentBookingSlot = null;
+let currentDuration = 120; // minutes, default 2 hours
+const MIN_DURATION = 120; // 2 hours minimum
+const MAX_DURATION = 240; // 4 hours maximum
+const BASE_PRICE = 100; // euros for 2 hours
+const PRICE_PER_HOUR = 50; // euros per additional hour
+
+// Calculate price based on duration in minutes
+function calculatePrice(minutes) {
+    if (minutes < MIN_DURATION) return BASE_PRICE;
+    const extraHours = (minutes - MIN_DURATION) / 60;
+    return BASE_PRICE + (PRICE_PER_HOUR * extraHours);
+}
+
+// Format time for display (e.g., "11:00 AM - 1:00 PM")
+function formatTimeRange(startTimeStr, durationMinutes) {
+    const start = parseTime(startTimeStr);
+    const startDate = new Date();
+    startDate.setHours(start.hours, start.minutes, 0, 0);
+    
+    const endDate = new Date(startDate);
+    endDate.setMinutes(endDate.getMinutes() + durationMinutes);
+    
+    const formatTime = (date) => {
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        const minsStr = minutes.toString().padStart(2, '0');
+        return `${hours}:${minsStr} ${period}`;
+    };
+    
+    return `${formatTime(startDate)} - ${formatTime(endDate)}`;
+}
+
+// Open booking modal with selected slot
+function openBookingModal(dateStr, timeStr, dayName) {
+    currentBookingSlot = { dateStr, timeStr, dayName };
+    currentDuration = MIN_DURATION;
+    
+    const slotDisplay = formatTimeRange(timeStr, currentDuration);
+    document.getElementById('booking-slot-time').textContent = slotDisplay;
+    document.getElementById('duration-display').textContent = '2h';
+    document.getElementById('price-display').textContent = `${calculatePrice(currentDuration)}€`;
+    
+    document.getElementById('booking-modal').classList.add('active');
+}
+
+// Close booking modal
+function closeBookingModal() {
+    document.getElementById('booking-modal').classList.remove('active');
+    document.getElementById('booking-error').style.display = 'none';
+    currentBookingSlot = null;
+    currentDuration = MIN_DURATION;
+}
+
+// Update duration display and price
+function updateDurationDisplay() {
+    const hours = Math.floor(currentDuration / 60);
+    document.getElementById('duration-display').textContent = `${hours}h`;
+    document.getElementById('price-display').textContent = `${calculatePrice(currentDuration)}€`;
+    
+    if (currentBookingSlot) {
+        const slotDisplay = formatTimeRange(currentBookingSlot.timeStr, currentDuration);
+        document.getElementById('booking-slot-time').textContent = slotDisplay;
+    }
+}
+
+// Submit booking request
+function submitBooking() {
+    if (!currentBookingSlot) return;
+    
+    const { dateStr, timeStr } = currentBookingSlot;
+    const slotTime = parseTime(timeStr);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    
+    const startDateTime = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setMinutes(endDateTime.getMinutes() + currentDuration);
+    
+    const bookingData = {
+        start_time: startDateTime.toISOString(),
+        lesson_minutes: currentDuration
+    };
+    
+    fetch('/api/book-slot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeBookingModal();
+            renderCalendar();
+            // Show success message (you can add a toast notification here)
+            alert('Booking request submitted! Waiting for admin approval.');
+        } else {
+            document.getElementById('booking-error').textContent = data.error || 'Failed to submit booking';
+            document.getElementById('booking-error').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        document.getElementById('booking-error').textContent = 'Network error. Please try again.';
+        document.getElementById('booking-error').style.display = 'block';
+        console.error('Error:', error);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     renderCalendar();
     
@@ -174,39 +286,40 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar();
     });
     
+    // Calendar cell click handler - open modal instead of toggle
     const calendarTable = document.getElementById('calendar');
     calendarTable.addEventListener('click', function(event) {
         const clickedCell = event.target;
         
         if (clickedCell.tagName === 'TD' && !clickedCell.classList.contains('past-slot')) {
-            clickedCell.classList.toggle('selected');
-            
             const day = clickedCell.getAttribute('data-day');
             const time = clickedCell.getAttribute('data-time');
             const date = clickedCell.getAttribute('data-date');
-            const isSelected = clickedCell.classList.contains('selected');
             
-            fetch('/select_date', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    day: day,
-                    time: time,
-                    date: date,
-                    selected: isSelected
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+            openBookingModal(date, time, day);
         }
     });
+    
+    // Modal controls
+    document.getElementById('duration-decrease').addEventListener('click', function() {
+        if (currentDuration > MIN_DURATION) {
+            currentDuration -= 60;
+            updateDurationDisplay();
+        }
+    });
+    
+    document.getElementById('duration-increase').addEventListener('click', function() {
+        if (currentDuration < MAX_DURATION) {
+            currentDuration += 60;
+            updateDurationDisplay();
+        }
+    });
+    
+    document.getElementById('booking-cancel').addEventListener('click', closeBookingModal);
+    document.getElementById('booking-confirm').addEventListener('click', submitBooking);
+    
+    // Close modal when clicking overlay
+    document.querySelector('.booking-modal-overlay').addEventListener('click', closeBookingModal);
     
     setInterval(checkPastSlots, 60000);
 });

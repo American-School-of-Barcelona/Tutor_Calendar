@@ -41,6 +41,38 @@
         </div>
     </div>
     
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="booking-modal">
+        <div class="booking-modal-overlay"></div>
+        <div class="booking-modal-content">
+            <h2 class="booking-modal-title">Book a Lesson</h2>
+            <p class="booking-modal-subtitle" id="booking-time-display">Would you like to book a 2h lesson at <span id="booking-slot-time"></span>?</p>
+            
+            <div class="booking-details">
+                <div class="booking-detail-row">
+                    <label class="booking-detail-label">Lesson time:</label>
+                    <div class="booking-duration-controls">
+                        <button type="button" class="booking-duration-btn" id="duration-decrease">−</button>
+                        <span class="booking-duration-value" id="duration-display">2h</span>
+                        <button type="button" class="booking-duration-btn" id="duration-increase">+</button>
+                    </div>
+                </div>
+                
+                <div class="booking-detail-row">
+                    <label class="booking-detail-label">Lesson price:</label>
+                    <span class="booking-price-value" id="price-display">100€</span>
+                </div>
+            </div>
+            
+            <div class="booking-modal-actions">
+                <button type="button" class="booking-btn booking-btn-cancel" id="booking-cancel">Cancel</button>
+                <button type="button" class="booking-btn booking-btn-confirm" id="booking-confirm">Confirm</button>
+            </div>
+            
+            <div class="booking-error" id="booking-error" style="display: none;"></div>
+        </div>
+    </div>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
