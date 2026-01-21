@@ -549,9 +549,10 @@ def book_slot():
     if start_time < datetime.utcnow():
         return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
     
-    # Calculate end time
-    end_time = start_time.replace(minute=start_time.minute + lesson_minutes)
-    
+       # Calculate end time
+    from datetime import timedelta
+    end_time = start_time + timedelta(minutes=lesson_minutes)
+
     # Calculate price
     try:
         price_eur = calculate_price(lesson_minutes)
