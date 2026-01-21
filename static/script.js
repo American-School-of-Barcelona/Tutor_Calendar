@@ -1,5 +1,31 @@
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const timeSlots = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'];
+
+
+const DAY_START_HOUR = 8;      // 8:00 AM
+const DAY_END_HOUR = 20;       // 8:00 PM
+const SLOT_INTERVAL_MINUTES = 15;
+
+function generateTimeSlots() {
+    const slots = [];
+    const startMinutes = DAY_START_HOUR * 60;
+    const endMinutes = DAY_END_HOUR * 60;
+
+    for (let minutes = startMinutes; minutes < endMinutes; minutes += SLOT_INTERVAL_MINUTES) {
+        const hour24 = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+
+        const period = hour24 >= 12 ? 'PM' : 'AM';
+        let hour12 = hour24 % 12;
+        if (hour12 === 0) hour12 = 12;
+
+        const minsStr = mins.toString().padStart(2, '0');
+        slots.push(`${hour12}:${minsStr} ${period}`);
+    }
+
+    return slots;
+}
+
+const timeSlots = generateTimeSlots();
 
 let currentWeekStart = getCurrentWeekStart();
 
