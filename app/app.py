@@ -500,7 +500,95 @@ def student_calendar():
 @app.route("/admin/booking-approvals")
 @admin_required
 def admin_booking_approvals():
-    return render_template("admin/booking-approvals.html")
+    pending_count = Booking.query.filter_by(status="pending").count()
+    return render_template("admin/booking-approvals.html", pending_count=pending_count)
+
+@app.route("/api/admin/bookings")
+@admin_required
+def admin_bookings_api():
+    """
+    Get all pending bookings for admin approval.
+    Returns JSON list of bookings with student info.
+    """
+    status_filter = request.args.get('status', 'pending')
+    
+    bookings = Booking.query.filter_by(status=status_filter).order_by(Booking.start_time.asc()).all()
+    
+    bookings_data = []
+    for booking in bookings:
+        student = User.query.get(booking.student_id)
+        bookings_data.append({
+            'id': booking.id,
+            'student_name': f"{student.username or student.email}",
+            'student_email': student.email,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'lesson_minutes': booking.lesson_minutes,
+            'price_eur': booking.price_eur,
+            'status': booking.status,
+            'created_at': booking.created_at.isoformat()
+        })
+    
+    return jsonify({"success": True, "bookings": bookings_data})
+
+@app.route("/admin/bookings/<int:booking_id>/approve", methods=["POST"])
+@admin_required
+def approve_booking(booking_id):
+    """
+    Approve a pending booking request.
+    Automatically denies conflicting pending bookings.
+    """
+    booking = Booking.query.get(booking_id)
+    
+    if not booking:
+        return jsonify({"success": False, "error": "Booking not found"}), 404
+    
+    if booking.status != "pending":
+        return jsonify({"success": False, "error": f"Booking is already {booking.status}"}), 400
+    
+    # Check for conflicting pending bookings and deny them
+    conflicting_bookings = Booking.query.filter(
+        Booking.id != booking_id,
+        Booking.status == "pending",
+        Booking.start_time < booking.end_time,
+        Booking.end_time > booking.start_time
+    ).all()
+    
+    for conflict in conflicting_bookings:
+        conflict.status = "denied"
+    
+    # Approve the booking
+    booking.status = "accepted"
+    
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "message": "Booking approved successfully",
+        "denied_conflicts": len(conflicting_bookings)
+    })
+
+@app.route("/admin/bookings/<int:booking_id>/deny", methods=["POST"])
+@admin_required
+def deny_booking(booking_id):
+    """
+    Deny a pending booking request.
+    """
+    booking = Booking.query.get(booking_id)
+    
+    if not booking:
+        return jsonify({"success": False, "error": "Booking not found"}), 404
+    
+    if booking.status != "pending":
+        return jsonify({"success": False, "error": f"Booking is already {booking.status}"}), 400
+    
+    booking.status = "denied"
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "message": "Booking denied successfully"
+    })
 
 @app.route("/admin/signup-approvals")
 @admin_required

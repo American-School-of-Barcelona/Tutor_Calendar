@@ -863,3 +863,139 @@
     font-size: 14px;
     text-align: center;
 }
+
+/* Booking Approvals Styles */
+.bookings-loading {
+    text-align: center;
+    padding: 40px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    color: #666666;
+}
+
+.bookings-empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 18px;
+    color: #666666;
+}
+
+.bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.booking-item {
+    background: #fff8ec;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border: 1px solid #e0d2bc;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.booking-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.booking-item-info {
+    flex: 1;
+}
+
+.booking-item-header {
+    margin-bottom: 16px;
+}
+
+.booking-student-name {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333333;
+    margin: 0 0 4px 0;
+}
+
+.booking-student-email {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    color: #666666;
+}
+
+.booking-item-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.booking-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.booking-detail-label {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.booking-detail-value {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    color: #333333;
+}
+
+.booking-price {
+    font-weight: 700;
+    color: #e0a85c;
+}
+
+.booking-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 24px;
+}
+
+.booking-action-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease, transform 120ms ease;
+    min-width: 120px;
+}
+
+.booking-action-approve {
+    background: #c8e6c9;
+    color: #2e7d32;
+}
+
+.booking-action-approve:hover {
+    background: #a5d6a7;
+    transform: translateY(-1px);
+}
+
+.booking-action-deny {
+    background: #ffcdd2;
+    color: #c62828;
+}
+
+.booking-action-deny:hover {
+    background: #ef9a9a;
+    transform: translateY(-1px);
+}
+
+.booking-action-btn:active {
+    transform: translateY(0);
+}
