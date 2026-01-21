@@ -88,7 +88,9 @@ class Booking(db.Model):
     tutor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(20), default="pending")  # pending/accepted/denied
+    lesson_minutes = db.Column(db.Integer, nullable=False)  # Duration in minutes
+    price_eur = db.Column(db.Integer, nullable=False)  # Price in euros
+    status = db.Column(db.String(20), default="pending")  # pending/accepted/denied/cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     student = db.relationship("User", foreign_keys=[student_id], backref="student_bookings")
