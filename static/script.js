@@ -138,6 +138,8 @@ function renderCalendar() {
     
     document.getElementById('week-display').textContent = formatMonthYear(currentWeekStart);
     checkPastSlots();
+
+    loadBookingColors();
 }
 
 function checkPastSlots() {
@@ -157,6 +159,68 @@ function checkPastSlots() {
                 cell.classList.add('past-slot');
                 cell.style.cursor = 'not-allowed';
             }
+        }
+    });
+}
+
+async function loadBookingColors() {
+    try {
+        const weekStartISO = currentWeekStart.toISOString();
+        const response = await fetch(`/api/calendar/bookings?week_start=${weekStartISO}`);
+        const data = await response.json();
+        
+        if (data.success && data.bookings) {
+            applyBookingColors(data.bookings);
+        }
+    } catch (error) {
+        console.error('Error loading booking colors:', error);
+    }
+}
+
+function applyBookingColors(bookings) {
+    const cells = document.querySelectorAll('#calendar td[data-date][data-time]');
+    
+    cells.forEach(cell => {
+        const dateStr = cell.getAttribute('data-date');
+        const timeStr = cell.getAttribute('data-time');
+        
+        if (!dateStr || !timeStr || cell.classList.contains('past-slot')) {
+            return;
+        }
+        
+        const slotTime = parseTime(timeStr);
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const slotStart = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
+        const slotEnd = new Date(slotStart);
+        slotEnd.setMinutes(slotEnd.getMinutes() + 15); // 15-minute slot
+        
+        // Check if this slot overlaps with any booking
+        let slotStatus = 'available';
+        
+        for (const booking of bookings) {
+            const bookingStart = new Date(booking.start_time);
+            const bookingEnd = new Date(booking.end_time);
+            
+            // Check if slot overlaps with booking
+            if (slotStart < bookingEnd && slotEnd > bookingStart) {
+                if (booking.status === 'accepted') {
+                    slotStatus = 'accepted';
+                    break; // Accepted takes priority
+                } else if (booking.status === 'pending' && slotStatus !== 'accepted') {
+                    slotStatus = 'pending';
+                }
+            }
+        }
+        
+        // Apply color class
+        cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted', 'slot-unavailable');
+        
+        if (slotStatus === 'available') {
+            cell.classList.add('slot-available');
+        } else if (slotStatus === 'pending') {
+            cell.classList.add('slot-pending');
+        } else if (slotStatus === 'accepted') {
+            cell.classList.add('slot-accepted');
         }
     });
 }
@@ -256,12 +320,13 @@ function submitBooking() {
     })
     .then(response => response.json())
     .then(data => {
+    
         if (data.success) {
             closeBookingModal();
             renderCalendar();
-            // Show success message (you can add a toast notification here)
-            alert('Booking request submitted! Waiting for admin approval.');
+            showToast('Booking request submitted! Check your email for an approval notification.', 'success');
         } else {
+            showToast(data.error || 'Failed to submit booking', 'error');
             document.getElementById('booking-error').textContent = data.error || 'Failed to submit booking';
             document.getElementById('booking-error').style.display = 'block';
         }
@@ -271,6 +336,48 @@ function submitBooking() {
         document.getElementById('booking-error').style.display = 'block';
         console.error('Error:', error);
     });
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'toast-message';
+    messageEl.textContent = message;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.onclick = () => removeToast(toast);
+    
+    toast.appendChild(messageEl);
+    toast.appendChild(closeBtn);
+    container.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        removeToast(toast);
+    }, 5000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
+}
+
+function removeToast(toast) {
+    toast.classList.add('fade-out');
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -323,3 +430,71 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setInterval(checkPastSlots, 60000);
 });
+
+let loadingOverlay = null;
+
+function showLoading(message = 'Loading...') {
+    if (loadingOverlay) return;
+    
+    loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    
+    const content = document.createElement('div');
+    content.className = 'loading-content';
+    
+    const spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    
+    const text = document.createElement('div');
+    text.className = 'loading-text';
+    text.textContent = message;
+    
+    content.appendChild(spinner);
+    content.appendChild(text);
+    loadingOverlay.appendChild(content);
+    document.body.appendChild(loadingOverlay);
+}
+
+function hideLoading() {
+    if (loadingOverlay) {
+        loadingOverlay.remove();
+        loadingOverlay = null;
+    }
+}
+
+// Update submitBooking to show loading
+function submitBooking() {
+    if (!currentBookingSlot) return;
+    
+    showLoading('Submitting booking request...');
+    
+    // ... existing booking code ...
+    
+    fetch('/api/book-slot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            closeBookingModal();
+            renderCalendar();
+            showToast('Booking request submitted! Check your email for an approval notification.', 'success');
+        } else {
+            showToast(data.error || 'Failed to submit booking', 'error');
+            document.getElementById('booking-error').textContent = data.error || 'Failed to submit booking';
+            document.getElementById('booking-error').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showToast('Network error. Please try again.', 'error');
+        document.getElementById('booking-error').textContent = 'Network error. Please try again.';
+        document.getElementById('booking-error').style.display = 'block';
+        console.error('Error:', error);
+    });
+}

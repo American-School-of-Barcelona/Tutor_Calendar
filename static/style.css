@@ -43,6 +43,45 @@
     border: 2px solid #e0a85c;
 }
 
+/* Add to static/style.css after line 96 */
+
+/* Calendar Slot Color Coding */
+#calendar td.slot-available {
+    background: #c8e6c9; /* Pastel green */
+    cursor: pointer;
+}
+
+#calendar td.slot-available:hover {
+    background: #a5d6a7;
+}
+
+#calendar td.slot-pending {
+    background: #fff9c4; /* Pastel yellow */
+    cursor: pointer;
+}
+
+#calendar td.slot-pending:hover {
+    background: #fff59d;
+}
+
+#calendar td.slot-accepted {
+    background: #ffccbc; /* Pastel red/orange */
+    cursor: not-allowed;
+}
+
+#calendar td.slot-accepted:hover {
+    background: #ffccbc;
+}
+
+#calendar td.slot-unavailable {
+    background: #e0e0e0; /* Light gray */
+    cursor: not-allowed;
+}
+
+#calendar td.slot-unavailable:hover {
+    background: #e0e0e0;
+}
+
 .week-navigation {
     display: flex;
     justify-content: space-between;
@@ -1132,4 +1171,254 @@
 
 .student-booking-cancel-btn:active {
     transform: translateY(0);
+}
+
+/* Toast Notification System */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+.toast {
+    background: #fff8ec;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: toastSlideIn 300ms ease;
+    border-left: 4px solid;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.toast-success {
+    border-left-color: #4caf50;
+}
+
+.toast-error {
+    border-left-color: #f44336;
+}
+
+.toast-info {
+    border-left-color: #2196f3;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+    color: #333333;
+    font-weight: 500;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999999;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 150ms ease;
+}
+
+.toast-close:hover {
+    background: #f2dfc3;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.fade-out {
+    animation: toastSlideOut 300ms ease forwards;
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f2dfc3;
+    border-top-color: #f1c27d;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    backdrop-filter: blur(2px);
+}
+
+.loading-content {
+    background: #fff8ec;
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #333333;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+    
+    .nav-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-tab {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .dashboard-container {
+        padding: 16px;
+    }
+    
+    .dashboard-title {
+        font-size: 24px;
+    }
+    
+    .week-navigation {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .week-display {
+        font-size: 16px;
+        text-align: center;
+    }
+    
+    #calendar {
+        font-size: 12px;
+    }
+    
+    #calendar th,
+    #calendar td {
+        padding: 8px 4px;
+        min-width: 60px;
+        font-size: 11px;
+    }
+    
+    #calendar th[scope="row"] {
+        font-size: 10px;
+        padding: 8px 4px;
+    }
+    
+    .booking-modal-content {
+        padding: 24px;
+        width: 95%;
+    }
+    
+    .booking-modal-title {
+        font-size: 22px;
+    }
+    
+    .toast-container {
+        right: 12px;
+        left: 12px;
+        max-width: none;
+    }
+    
+    .hero-title {
+        font-size: 32px;
+    }
+    
+    .hero-subtitle {
+        font-size: 16px;
+    }
+    
+    .features-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 24px 20px;
+    }
+    
+    .auth-title {
+        font-size: 24px;
+    }
+    
+    #calendar th,
+    #calendar td {
+        padding: 6px 2px;
+        min-width: 50px;
+        font-size: 10px;
+    }
+    
+    .booking-item,
+    .student-booking-item {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .booking-item-actions,
+    .student-booking-actions {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .booking-action-btn {
+        width: 100%;
+    }
 }

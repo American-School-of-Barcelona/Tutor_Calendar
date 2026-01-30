@@ -789,3 +789,49 @@ def book_slot():
         "booking_id": new_booking.id,
         "message": "Booking request submitted successfully"
     }), 201
+
+@app.route("/api/calendar/bookings", methods=["GET"])
+@login_required
+def get_calendar_bookings():
+    """
+    Get bookings for the calendar view.
+    Returns bookings for the current week.
+    """
+    from datetime import datetime, timedelta
+    
+    # Get week start from query params or use current week
+    week_start_str = request.args.get('week_start')
+    if week_start_str:
+        try:
+            week_start = datetime.fromisoformat(week_start_str.replace('Z', '+00:00'))
+            if week_start.tzinfo:
+                week_start = week_start.replace(tzinfo=None)
+        except ValueError:
+            week_start = datetime.utcnow()
+    else:
+        week_start = datetime.utcnow()
+    
+    # Calculate week end (7 days later)
+    week_end = week_start + timedelta(days=7)
+    
+    # Get all bookings in this week
+    bookings = Booking.query.filter(
+        Booking.start_time >= week_start,
+        Booking.start_time < week_end
+    ).all()
+    
+    # Format bookings for frontend
+    bookings_data = []
+    for booking in bookings:
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'status': booking.status,
+            'student_id': booking.student_id
+        })
+    
+    return jsonify({
+        'success': True,
+        'bookings': bookings_data
+    })
