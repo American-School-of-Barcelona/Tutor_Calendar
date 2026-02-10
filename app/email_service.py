@@ -95,3 +95,26 @@ Please log in to review and approve/deny this request.
 Tutomatics Admin Panel
 """
     return send_email(admin_email, subject, template)
+
+def send_signup_approved_email(user_email, user_name):
+    subject = "Signup Approved"
+    template = """Hello {},
+
+Your Tutomatics account has been approved.
+
+You can now log in and start booking lessons.
+
+Thank you for registering with Tutomatics!"""
+    return send_email_safe(user_email, subject, template, user_name)
+
+
+def send_signup_denied_email(user_email, user_name):
+    subject = "Signup Request Denied"
+    template = """Hello {},
+
+Unfortunately, your signup request for Tutomatics has been denied.
+
+If you believe this is a mistake, please contact us for more information.
+
+Thank you for your interest in Tutomatics."""
+    return send_email_safe(user_email, subject, template, user_name)

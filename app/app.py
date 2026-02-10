@@ -5,9 +5,16 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color
-from .email_service import send_booking_submitted_email, send_new_booking_notification_email
-from .email_service import send_booking_approved_email
-from .email_service import send_booking_denied_email
+
+from .email_service import (
+    send_booking_submitted_email,
+    send_booking_approved_email,
+    send_booking_denied_email,
+    send_new_booking_notification_email,
+    send_signup_approved_email,
+    send_signup_denied_email,
+)
+
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -151,9 +158,13 @@ def login():
             return render_template("login.html"), 403
 
         # Check if student is approved
-        if user.role == "student" and user.status != "approved":
-            flash("Your account is pending approval. Please wait for admin approval.", "error")
-            return render_template("login.html")
+        if user.role == "student":
+            if user.status == "pending":
+                flash("Your account is pending approval. Please wait for admin approval.", "error")
+                return render_template("login.html")
+            if user.status == "denied":
+                flash("Your signup request was denied. Please contact support if you think this is a mistake.", "error")
+                return render_template("login.html")
 
         # Log the user in using Flask-Login
         login_user(user)
@@ -372,6 +383,12 @@ def approve_user(user_id):
     if user and user.status == "pending":
         user.status = "approved"
         db.session.commit()
+        
+        send_signup_approved_email(
+            user_email=user.email,
+            user_name=user.username or user.email,
+        )
+        
         flash(f"User {user.username} has been approved.", "success")
     return redirect("/admin/signup-approvals")
 
@@ -380,9 +397,15 @@ def approve_user(user_id):
 def deny_user(user_id):
     user = User.query.get(user_id)
     if user and user.status == "pending":
-        db.session.delete(user)
+        user.status = "denied"
         db.session.commit()
-        flash(f"User {user.username} has been denied and removed.", "info")
+        
+        send_signup_denied_email(
+            user_email=user.email,
+            user_name=user.username or user.email,
+        )
+        
+        flash(f"User {user.username} has been denied.", "info")
     return redirect("/admin/signup-approvals")
 
 
