@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color
 
 from .email_service import (
@@ -791,11 +791,16 @@ def book_slot():
         return jsonify({"success": False, "error": "Duration must be in 1-hour increments"}), 400
     
     # Check if booking is in the future
-    if start_time < datetime.utcnow():
+    now_utc = datetime.utcnow()
+    if start_time < now_utc:
         return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
     
-       # Calculate end time
-    from datetime import timedelta
+    # Enforce minimum 3-hour lead time
+    min_allowed_start = now_utc + timedelta(hours=3)
+    if start_time < min_allowed_start:
+        return jsonify({"success": False, "error": "Bookings must be made at least 3 hours in advance"}), 400
+    
+    # Calculate end time
     end_time = start_time + timedelta(minutes=lesson_minutes)
 
     # Calculate price
