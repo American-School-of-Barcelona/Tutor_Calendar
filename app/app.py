@@ -822,6 +822,10 @@ def book_slot():
     tutor = User.query.filter_by(role="admin").first()
     if not tutor:
         return jsonify({"success": False, "error": "No tutor available"}), 500
+
+    # Check tutor availability
+    if not is_within_availability(tutor.id, start_time, end_time, db.session):
+        return jsonify({"success": False, "error": "Tutor is unavailable at this time"}), 400
     
     # Check for conflicts with accepted bookings
     conflicting_bookings = Booking.query.filter(
