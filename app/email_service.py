@@ -27,7 +27,18 @@ def send_email(to, subject, template, **kwargs):
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
-
+    
+def send_email_safe(to, subject, template, *format_args, **format_kwargs):
+    try:
+        if format_args or format_kwargs:
+            body = template.format(*format_args, **format_kwargs)
+        else:
+            body = template
+        return send_email(to, subject, body)
+    except Exception as e:
+        print(f"Email error (non-blocking): {e}")
+        return False
+    
 def send_booking_submitted_email(student_email, student_name, booking_time, duration):
     """Send email when student submits a booking request."""
     subject = "Booking Request Submitted"
@@ -118,3 +129,17 @@ If you believe this is a mistake, please contact us for more information.
 
 Thank you for your interest in Tutomatics."""
     return send_email_safe(user_email, subject, template, user_name)
+
+def send_new_signup_request_notification_email(admin_email, user_name, user_email):
+    subject = "New Signup Request"
+    template = """Hello Admin,
+
+A new student signup request has been submitted:
+
+- Name: {}
+- Email: {}
+
+Please log in to review and approve/deny this signup.
+
+Tutomatics Admin Panel"""
+    return send_email_safe(admin_email, subject, template, user_name, user_email)

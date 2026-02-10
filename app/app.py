@@ -13,6 +13,7 @@ from .email_service import (
     send_new_booking_notification_email,
     send_signup_approved_email,
     send_signup_denied_email,
+    send_new_signup_request_notification_email,
 )
 
 from dotenv import load_dotenv
@@ -370,6 +371,14 @@ def signup():
 
         db.session.add(new_user)
         db.session.commit()
+
+        admins = User.query.filter_by(role="admin").all()
+        for admin in admins:
+            send_new_signup_request_notification_email(
+                admin_email=admin.email,
+                user_name=new_user.username or new_user.email,
+                user_email=new_user.email,
+            )
 
         flash("Sign up request submitted! Check your email for an approval notification", "success")
         return redirect("/")
