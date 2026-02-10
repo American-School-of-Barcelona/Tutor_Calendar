@@ -398,12 +398,19 @@ document.addEventListener('DOMContentLoaded', function() {
     calendarTable.addEventListener('click', function(event) {
         const clickedCell = event.target;
         
-        if (clickedCell.tagName === 'TD' && !clickedCell.classList.contains('past-slot')) {
+        if (
+            clickedCell.tagName === 'TD' &&
+            !clickedCell.classList.contains('past-slot') &&
+            !clickedCell.classList.contains('slot-accepted') &&
+            !clickedCell.classList.contains('slot-unavailable')
+        ) {
             const day = clickedCell.getAttribute('data-day');
             const time = clickedCell.getAttribute('data-time');
             const date = clickedCell.getAttribute('data-date');
             
-            openBookingModal(date, time, day);
+            if (day && time && date) {
+                openBookingModal(date, time, day);
+            }
         }
     });
     

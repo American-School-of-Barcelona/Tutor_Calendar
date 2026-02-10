@@ -705,7 +705,7 @@ def approve_booking(booking_id):
     time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
     send_booking_approved_email(
         student_email=student.email,
-        student_name=student.first_name or student.username,
+        student_name=student.username or student.email,
         booking_time=time_str,
         duration=duration_hours,
         price=booking.price_eur
@@ -737,9 +737,9 @@ def deny_booking(booking_id):
     student = booking.student
     time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
     send_booking_denied_email(
-    student_email=student.email,
-    student_name=student.first_name or student.username,
-    booking_time=time_str
+        student_email=student.email,
+        student_name=student.username or student.email,
+        booking_time=time_str
     )
     
     return jsonify({
@@ -839,7 +839,7 @@ def book_slot():
     time_str = start_time.strftime("%Y-%m-%d %H:%M")
     send_booking_submitted_email(
         student_email=student.email,
-        student_name=student.first_name or student.username,
+        student_name=student.username or student.email,
         booking_time=time_str,
         duration=duration_hours
     )
@@ -848,7 +848,7 @@ def book_slot():
     if admin:
         send_new_booking_notification_email(
             admin_email=admin.email,
-            student_name=student.first_name or student.username,
+            student_name=student.username or student.email,
             booking_time=time_str
         )
     

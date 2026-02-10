@@ -11,22 +11,22 @@
 <body class="dashboard-body">
     {% include 'partials/nav.html' %}
     
-    <div class="dashboard-container">
-        <h1 class="dashboard-title">Admin Dashboard</h1>
-        
-        <div class="dashboard-nav-row">
-            <nav class="dashboard-tabs">
-                <a href="/admin/home" class="tab-link">Home</a>
-                <a href="/admin/calendar" class="tab-link">Calendar View</a>
-                <a href="/admin/booking-approvals" class="tab-link active">Booking Approvals</a>
-                <a href="/admin/signup-approvals" class="tab-link">Sign-up Approvals</a>
-            </nav>
+    <div class="dashboard-content">
+        <h2>Booking Approvals</h2>
+        <p>Pending booking requests will appear here.</p>
+
+        <div id="bookings-loading" class="booking-loading">
+            Loading booking requests...
         </div>
-        
-        <div class="dashboard-content">
-            <h2>Booking Approvals</h2>
-            <p>Pending booking requests will appear here.</p>
+
+        <div id="bookings-empty" class="booking-empty" style="display: none;">
+            No pending booking requests.
         </div>
+
+        <div id="bookings-list" class="bookings-list"></div>
     </div>
+
+    <script src="{{ url_for('static', filename='admin/admin-bookings.js') }}"></script>
+    
 </body>
 </html>
