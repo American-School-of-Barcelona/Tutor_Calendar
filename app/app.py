@@ -5,22 +5,30 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color
+from .email_service import send_booking_submitted_email, send_new_booking_notification_email
+from .email_service import send_booking_approved_email
+from .email_service import send_booking_denied_email
+from dotenv import load_dotenv
+from pathlib import Path
 
 import os
+
+env_path = Path(__file__).resolve().parents[1] / 'config' / '.env'
+load_dotenv(dotenv_path=env_path)
 
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
             static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
 
 # Configuration for SQLAlchemy
-app.config['SECRET_KEY'] = 'your-secret-key-here-change-this-later'
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-db_path = os.path.join(base_dir, 'instance', 'app.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config.from_object('app.config.Config')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Initialize Flask-Mail
+from flask_mail import Mail
+mail = Mail(app)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -668,6 +676,17 @@ def approve_booking(booking_id):
     booking.status = "accepted"
     
     db.session.commit()
+
+    student = booking.student
+    duration_hours = booking.lesson_minutes // 60
+    time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
+    send_booking_approved_email(
+        student_email=student.email,
+        student_name=student.first_name or student.username,
+        booking_time=time_str,
+        duration=duration_hours,
+        price=booking.price_eur
+    )
     
     return jsonify({
         "success": True,
@@ -691,6 +710,14 @@ def deny_booking(booking_id):
     
     booking.status = "denied"
     db.session.commit()
+
+    student = booking.student
+    time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
+    send_booking_denied_email(
+    student_email=student.email,
+    student_name=student.first_name or student.username,
+    booking_time=time_str
+    )
     
     return jsonify({
         "success": True,
@@ -783,6 +810,24 @@ def book_slot():
     
     db.session.add(new_booking)
     db.session.commit()
+
+    student = User.query.get(current_user.id)
+    duration_hours = lesson_minutes // 60
+    time_str = start_time.strftime("%Y-%m-%d %H:%M")
+    send_booking_submitted_email(
+        student_email=student.email,
+        student_name=student.first_name or student.username,
+        booking_time=time_str,
+        duration=duration_hours
+    )
+    
+    admin = User.query.filter_by(role="admin").first()
+    if admin:
+        send_new_booking_notification_email(
+            admin_email=admin.email,
+            student_name=student.first_name or student.username,
+            booking_time=time_str
+        )
     
     return jsonify({
         "success": True,
