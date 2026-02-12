@@ -37,7 +37,15 @@ function formatDuration(minutes) {
     return `${hours}h`;
 }
 
-// Render classes list
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Render classes list (similar to booking approvals)
 function renderClasses(bookings) {
     const container = document.getElementById('classes-list');
     const loading = document.getElementById('classes-loading');
@@ -53,37 +61,79 @@ function renderClasses(bookings) {
     
     empty.style.display = 'none';
     
-    container.innerHTML = bookings.map(booking => {
-        return `
-            <div class="booking-item">
-                <div class="booking-item-info">
-                    <div class="booking-item-header">
-                        <h3 class="booking-student-name">${booking.student_name || 'Unknown Student'}</h3>
-                        <p class="booking-student-email">${booking.student_email || ''}</p>
+    container.innerHTML = bookings.map(booking => `
+        <div class="booking-item" data-booking-id="${booking.id}">
+            <div class="booking-item-info">
+                <div class="booking-item-header">
+                    <h3 class="booking-student-name">${escapeHtml(booking.student_name || 'Unknown Student')}</h3>
+                    <span class="booking-student-email">${escapeHtml(booking.student_email || '')}</span>
+                </div>
+                
+                <div class="booking-item-details">
+                    <div class="booking-detail">
+                        <span class="booking-detail-label">Date:</span>
+                        <span class="booking-detail-value">${formatDateTime(booking.start_time)}</span>
                     </div>
-                    
-                    <div class="booking-item-details">
-                        <div class="booking-detail">
-                            <span class="booking-detail-label">Date & Time:</span>
-                            <span class="booking-detail-value">${formatDateTime(booking.start_time)}</span>
-                        </div>
-                        <div class="booking-detail">
-                            <span class="booking-detail-label">Time Range:</span>
-                            <span class="booking-detail-value">${formatTimeRange(booking.start_time, booking.end_time)}</span>
-                        </div>
-                        <div class="booking-detail">
-                            <span class="booking-detail-label">Duration:</span>
-                            <span class="booking-detail-value">${formatDuration(booking.lesson_minutes)}</span>
-                        </div>
-                        <div class="booking-detail">
-                            <span class="booking-detail-label">Price:</span>
-                            <span class="booking-detail-value booking-price">${booking.price_eur}€</span>
-                        </div>
+                    <div class="booking-detail">
+                        <span class="booking-detail-label">Time:</span>
+                        <span class="booking-detail-value">${formatTimeRange(booking.start_time, booking.end_time)}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="booking-detail-label">Duration:</span>
+                        <span class="booking-detail-value">${formatDuration(booking.lesson_minutes)}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="booking-detail-label">Price:</span>
+                        <span class="booking-detail-value booking-price">${booking.price_eur}€</span>
                     </div>
                 </div>
             </div>
-        `;
-    }).join('');
+            
+            <div class="booking-item-actions">
+                <button class="booking-action-btn booking-action-cancel" data-id="${booking.id}">
+                    Cancel Class
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Attach cancel event listeners
+    container.querySelectorAll('.booking-action-cancel').forEach(btn => {
+        btn.addEventListener('click', handleCancelClass);
+    });
+}
+
+// Handle cancel class
+function handleCancelClass(event) {
+    const bookingId = event.target.getAttribute('data-id');
+    const bookingItem = event.target.closest('.booking-item');
+    
+    if (!confirm('Are you sure you want to cancel this class? The student will be notified.')) {
+        return;
+    }
+    
+    fetch(`/admin/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bookingItem.style.opacity = '0.5';
+            bookingItem.style.pointerEvents = 'none';
+            setTimeout(() => {
+                loadClasses();
+            }, 500);
+        } else {
+            alert(data.error || 'Failed to cancel class');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+    });
 }
 
 // Load upcoming classes

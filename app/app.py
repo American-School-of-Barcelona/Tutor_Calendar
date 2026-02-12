@@ -816,6 +816,52 @@ def deny_booking(booking_id):
         "message": "Booking denied successfully"
     })
 
+@app.route("/admin/bookings/<int:booking_id>/cancel", methods=["POST"])
+@admin_required
+def admin_cancel_booking(booking_id):
+    """
+    Admin cancels an accepted booking.
+    Sets status to cancelled and sends email notification.
+    """
+    booking = Booking.query.get(booking_id)
+    
+    if not booking:
+        return jsonify({"success": False, "error": "Booking not found"}), 404
+    
+    if booking.status != "accepted":
+        return jsonify({"success": False, "error": f"Can only cancel accepted bookings. Current status: {booking.status}"}), 400
+    
+    booking.status = "cancelled"
+    db.session.commit()
+
+    # Send cancellation email to student
+    student = booking.student
+    time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
+    duration_hours = booking.lesson_minutes // 60
+    
+    # Create cancellation email
+    from app.email_service import send_email_safe
+    send_email_safe(
+        to=student.email,
+        subject="Class Cancelled",
+        template="""Hello {},
+
+Unfortunately, your class scheduled for {} ({} hours) has been cancelled.
+
+If you have any questions, please contact us.
+
+Thank you for your understanding.""",
+        
+        student.username or student.email,
+        time_str,
+        duration_hours
+    )
+    
+    return jsonify({
+        "success": True,
+        "message": "Class cancelled successfully"
+    })
+
 @app.route("/admin/signup-approvals")
 @admin_required
 def admin_signup_approvals():
@@ -1054,12 +1100,11 @@ def book_slot():
             "error": f"An error occurred: {str(e)}"
         }), 500
 
-@app.route("/api/calendar/bookings", methods=["GET"])
-@login_required
-def get_calendar_bookings():
+@app.route("/api/public/calendar/bookings", methods=["GET"])
+def get_public_calendar_bookings():
     """
-    Get bookings for the calendar view.
-    Returns bookings for the current week.
+    Get bookings for the public calendar view (no login required).
+    Returns accepted bookings for the current week (excludes cancelled).
     """
     from datetime import datetime, timedelta
     
@@ -1078,10 +1123,72 @@ def get_calendar_bookings():
     # Calculate week end (7 days later)
     week_end = week_start + timedelta(days=7)
     
-    # Get all bookings in this week
+    # Get only accepted bookings in this week (exclude cancelled and pending)
     bookings = Booking.query.filter(
         Booking.start_time >= week_start,
-        Booking.start_time < week_end
+        Booking.start_time < week_end,
+        Booking.status == "accepted"  # Only show accepted bookings
+    ).all()
+    
+    # Format bookings for frontend
+    bookings_data = []
+    for booking in bookings:
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'status': booking.status,
+            'student_id': booking.student_id
+        })
+    
+    # Get unavailability blocks for tutor
+    tutor = User.query.filter_by(role="admin").first()
+    unavailability_blocks = []
+    if tutor:
+        blocks = Availability.query.filter_by(user_id=tutor.id).all()
+        for block in blocks:
+            unavailability_blocks.append({
+                'start_time': block.start_time.strftime('%H:%M'),
+                'end_time': block.end_time.strftime('%H:%M'),
+                'repeat_rule': block.repeat_rule,
+                'repeat_until': block.repeat_until.isoformat() if block.repeat_until else None
+            })
+    
+    return jsonify({
+        'success': True,
+        'bookings': bookings_data,
+        'unavailability_blocks': unavailability_blocks
+    })
+
+@app.route("/api/calendar/bookings", methods=["GET"])
+@login_required
+def get_calendar_bookings():
+    """
+    Get bookings for the calendar view.
+    Returns bookings for the current week (excludes cancelled).
+    """
+    from datetime import datetime, timedelta
+    
+    # Get week start from query params or use current week
+    week_start_str = request.args.get('week_start')
+    if week_start_str:
+        try:
+            week_start = datetime.fromisoformat(week_start_str.replace('Z', '+00:00'))
+            if week_start.tzinfo:
+                week_start = week_start.replace(tzinfo=None)
+        except ValueError:
+            week_start = datetime.utcnow()
+    else:
+        week_start = datetime.utcnow()
+    
+    # Calculate week end (7 days later)
+    week_end = week_start + timedelta(days=7)
+    
+    # Get all bookings in this week (exclude cancelled)
+    bookings = Booking.query.filter(
+        Booking.start_time >= week_start,
+        Booking.start_time < week_end,
+        Booking.status != "cancelled"  # Exclude cancelled bookings
     ).all()
     
     # Format bookings for frontend

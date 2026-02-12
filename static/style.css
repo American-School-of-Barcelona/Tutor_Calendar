@@ -1084,6 +1084,16 @@
     transform: translateY(0);
 }
 
+.booking-action-cancel {
+    background: #ffcdd2;
+    color: #c62828;
+}
+
+.booking-action-cancel:hover {
+    background: #ef9a9a;
+    transform: translateY(-1px);
+}
+
 /* Student Bookings Styles */
 .student-bookings-list {
     display: flex;
