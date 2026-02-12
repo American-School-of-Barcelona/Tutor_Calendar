@@ -179,12 +179,14 @@ async function loadBookingColors() {
 
 function applyBookingColors(bookings, unavailabilityBlocks = []) {
     const cells = document.querySelectorAll('#calendar td[data-date][data-time]');
+    const now = new Date();
+    const minAllowedTime = new Date(now.getTime() + 3 * 60 * 60 * 1000); // 3 hours from now
     
     cells.forEach(cell => {
         const dateStr = cell.getAttribute('data-date');
         const timeStr = cell.getAttribute('data-time');
         
-        if (!dateStr || !timeStr || cell.classList.contains('past-slot')) {
+        if (!dateStr || !timeStr) {
             return;
         }
         
@@ -193,6 +195,21 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
         const slotStart = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
         const slotEnd = new Date(slotStart);
         slotEnd.setMinutes(slotEnd.getMinutes() + 15); // 15-minute slot
+        
+        // Check if slot is in the past
+        if (slotStart < now) {
+            cell.classList.add('past-slot');
+            cell.style.cursor = 'not-allowed';
+            return;
+        }
+        
+        // Check if slot is less than 3 hours from now - make it unavailable
+        if (slotStart < minAllowedTime) {
+            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted');
+            cell.classList.add('slot-unavailable');
+            cell.style.cursor = 'not-allowed';
+            return;
+        }
         
         // Check if this slot overlaps with any unavailability block
         let isUnavailable = false;

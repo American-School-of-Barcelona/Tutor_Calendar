@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upcoming Classes - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    {% include 'partials/nav.html' %}
+    
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">Upcoming Classes</h1>
+        
+        <div class="dashboard-content">
+            <div id="classes-loading" class="bookings-loading">Loading upcoming classes...</div>
+            <div id="classes-empty" class="bookings-empty" style="display: none;">
+                <p>No upcoming classes scheduled.</p>
+            </div>
+            
+            <div id="classes-list" class="bookings-list"></div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='admin/admin-upcoming-classes.js') }}"></script>
+</body>
+</html>

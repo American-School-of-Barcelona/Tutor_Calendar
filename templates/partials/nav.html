@@ -10,9 +10,10 @@
                 {% if current_user.role == 'admin' %}
                     <a href="/admin/booking-approvals" class="nav-tab">Booking Approvals</a>
                     <a href="/admin/signup-approvals" class="nav-tab">Sign-up Approvals</a>
+                    <a href="/admin/upcoming-classes" class="nav-tab">Upcoming Classes</a>
                 {% else %}
-                    <a href="#" class="nav-tab">Tab 3</a>
-                    <a href="#" class="nav-tab">Tab 4</a>
+                    <a href="/student/bookings" class="nav-tab">My Bookings</a>
+                    <a href="/student/history" class="nav-tab">History</a>
                 {% endif %}
                 <a href="/logout" class="nav-tab logout-tab">Logout</a>
             {% else %}

@@ -534,7 +534,7 @@ def student_bookings():
     """
     if current_user.status != "approved":
         return redirect("/student/dashboard")
-    return render_template("student/bookings.html")
+    return render_template("student/booking.html")
 
 @app.route("/student/history")
 @login_required
@@ -643,6 +643,12 @@ def admin_calendar():
 def admin_booking_approvals():
     pending_count = Booking.query.filter_by(status="pending").count()
     return render_template("admin/booking-approvals.html", pending_count=pending_count)
+
+@app.route("/admin/upcoming-classes")
+@admin_required
+def admin_upcoming_classes():
+    """Admin view of upcoming approved bookings."""
+    return render_template("admin/upcoming-classes.html")
 
 @app.route("/api/admin/bookings")
 @admin_required
@@ -855,6 +861,36 @@ def delete_unavailability_block(block_id):
     
     return jsonify({"success": True})
 
+@app.route("/api/admin/upcoming-classes", methods=["GET"])
+@admin_required
+def get_upcoming_classes():
+    """Get all upcoming accepted bookings."""
+    tutor = User.query.filter_by(role="admin").first()
+    if not tutor:
+        return jsonify({"success": False, "error": "No tutor found"}), 404
+    
+    now = datetime.utcnow()
+    bookings = Booking.query.filter(
+        Booking.tutor_id == tutor.id,
+        Booking.status == "accepted",
+        Booking.start_time >= now
+    ).order_by(Booking.start_time.asc()).all()
+    
+    bookings_data = []
+    for booking in bookings:
+        student = User.query.get(booking.student_id)
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'lesson_minutes': booking.lesson_minutes,
+            'price_eur': booking.price_eur,
+            'student_name': student.username or student.email,
+            'student_email': student.email
+        })
+    
+    return jsonify({"success": True, "bookings": bookings_data})
+
 @app.route("/api/book-slot", methods=["POST"])
 @login_required
 def book_slot():
@@ -897,11 +933,6 @@ def book_slot():
         now_utc = datetime.utcnow()
         if start_time < now_utc:
             return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
-        
-        # Enforce minimum 3-hour lead time
-        min_allowed_start = now_utc + timedelta(hours=3)
-        if start_time < min_allowed_start:
-            return jsonify({"success": False, "error": "Bookings must be made at least 3 hours in advance"}), 400
         
         # Calculate end time
         end_time = start_time + timedelta(minutes=lesson_minutes)
