@@ -855,9 +855,6 @@ def delete_unavailability_block(block_id):
     
     return jsonify({"success": True})
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 @app.route("/api/book-slot", methods=["POST"])
 @login_required
 def book_slot():
@@ -865,117 +862,106 @@ def book_slot():
     Create a booking request for a student.
     Requires: student must be logged in and approved.
     """
-    if current_user.role != "student" or current_user.status != "approved":
-        return jsonify({"success": False, "error": "Unauthorized"}), 403
-    
-    data = request.get_json()
-    if not data:
-        return jsonify({"success": False, "error": "No data provided"}), 400
-    
-    start_time_str = data.get("start_time")
-    lesson_minutes = data.get("lesson_minutes")
-    
-    if not start_time_str or not lesson_minutes:
-        return jsonify({"success": False, "error": "Missing required fields"}), 400
-    
-    try:
-        start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
-        if start_time.tzinfo:
-            start_time = start_time.replace(tzinfo=None)
-    except ValueError:
-        return jsonify({"success": False, "error": "Invalid date format"}), 400
-    
-    # Validate duration
-    if lesson_minutes < 120 or lesson_minutes > 240:
-        return jsonify({"success": False, "error": "Duration must be between 2 and 4 hours"}), 400
-    
-    if lesson_minutes % 60 != 0:
-        return jsonify({"success": False, "error": "Duration must be in 1-hour increments"}), 400
-    
-    # Check if booking is in the future
-    now_utc = datetime.utcnow()
-    if start_time < now_utc:
-        return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
-    
-    # Enforce minimum 3-hour lead time
-    min_allowed_start = now_utc + timedelta(hours=3)
-    if start_time < min_allowed_start:
-        return jsonify({"success": False, "error": "Bookings must be made at least 3 hours in advance"}), 400
-    
-    # Calculate end time
-    end_time = start_time + timedelta(minutes=lesson_minutes)
+    print("=== BOOK_SLOT ROUTE CALLED ===")  
+    print(f"Request data: {request.get_json()}") 
 
-    # Calculate price
     try:
-        price_eur = calculate_price(lesson_minutes)
-    except ValueError as e:
-        return jsonify({"success": False, "error": str(e)}), 400
-    
-    # Get tutor/admin (for now, assume there's one admin/tutor)
-    tutor = User.query.filter_by(role="admin").first()
-    if not tutor:
-        return jsonify({"success": False, "error": "No tutor available"}), 500
-
-    # Check tutor availability
-    if not is_within_availability(tutor.id, start_time, end_time, db.session):
-        return jsonify({"success": False, "error": "Tutor is unavailable at this time"}), 400
-    
-    # Check for conflicts with accepted bookings
-    conflicting_bookings = Booking.query.filter(
-        Booking.tutor_id == tutor.id,
-        Booking.status == "accepted",
-        Booking.start_time < end_time,
-        Booking.end_time > start_time
-    ).first()
-    
-    if conflicting_bookings:
-        return jsonify({"success": False, "error": "This time slot is already booked"}), 400
-    
-    # Create booking
-    new_booking = Booking(
-        student_id=current_user.id,
-        tutor_id=tutor.id,
-        start_time=start_time,
-        end_time=end_time,
-        lesson_minutes=lesson_minutes,
-        price_eur=price_eur,
-        status="pending"
-    )
-    
-    db.session.add(new_booking)
-    db.session.commit()
-
-    # Send emails asynchronously (don't block the response)
-    try:
-        student = User.query.get(current_user.id)
-        duration_hours = lesson_minutes // 60
-        time_str = start_time.strftime("%Y-%m-%d %H:%M")
+        if current_user.role != "student" or current_user.status != "approved":
+            return jsonify({"success": False, "error": "Unauthorized"}), 403
         
-        # Send emails - these won't block even if they fail
-        send_booking_submitted_email(
-            student_email=student.email,
-            student_name=student.username or student.email,
-            booking_time=time_str,
-            duration=duration_hours
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+        
+        start_time_str = data.get("start_time")
+        lesson_minutes = data.get("lesson_minutes")
+        
+        if not start_time_str or not lesson_minutes:
+            return jsonify({"success": False, "error": "Missing required fields"}), 400
+        
+        try:
+            start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+            if start_time.tzinfo:
+                start_time = start_time.replace(tzinfo=None)
+        except ValueError:
+            return jsonify({"success": False, "error": "Invalid date format"}), 400
+        
+        # Validate duration
+        if lesson_minutes < 120 or lesson_minutes > 240:
+            return jsonify({"success": False, "error": "Duration must be between 2 and 4 hours"}), 400
+        
+        if lesson_minutes % 60 != 0:
+            return jsonify({"success": False, "error": "Duration must be in 1-hour increments"}), 400
+        
+        # Check if booking is in the future
+        now_utc = datetime.utcnow()
+        if start_time < now_utc:
+            return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
+        
+        # Enforce minimum 3-hour lead time
+        min_allowed_start = now_utc + timedelta(hours=3)
+        if start_time < min_allowed_start:
+            return jsonify({"success": False, "error": "Bookings must be made at least 3 hours in advance"}), 400
+        
+        # Calculate end time
+        end_time = start_time + timedelta(minutes=lesson_minutes)
+
+        # Calculate price
+        try:
+            price_eur = calculate_price(lesson_minutes)
+        except ValueError as e:
+            return jsonify({"success": False, "error": str(e)}), 400
+        
+        # Get tutor/admin (for now, assume there's one admin/tutor)
+        tutor = User.query.filter_by(role="admin").first()
+        if not tutor:
+            return jsonify({"success": False, "error": "No tutor available"}), 500
+
+        # Check tutor availability
+        if not is_within_availability(tutor.id, start_time, end_time, db.session):
+            return jsonify({"success": False, "error": "Tutor is unavailable at this time"}), 400
+        
+        # Check for conflicts with accepted bookings
+        conflicting_bookings = Booking.query.filter(
+            Booking.tutor_id == tutor.id,
+            Booking.status == "accepted",
+            Booking.start_time < end_time,
+            Booking.end_time > start_time
+        ).first()
+        
+        if conflicting_bookings:
+            return jsonify({"success": False, "error": "This time slot is already booked"}), 400
+        
+        # Create booking
+        new_booking = Booking(
+            student_id=current_user.id,
+            tutor_id=tutor.id,
+            start_time=start_time,
+            end_time=end_time,
+            lesson_minutes=lesson_minutes,
+            price_eur=price_eur,
+            status="pending"
         )
         
-        admin = User.query.filter_by(role="admin").first()
-        if admin:
-            send_new_booking_notification_email(
-                admin_email=admin.email,
-                student_name=student.username or student.email,
-                booking_time=time_str
-            )
+        db.session.add(new_booking)
+        db.session.commit()
+
+        # Return success response immediately
+        return jsonify({
+            "success": True,
+            "booking_id": new_booking.id,
+            "message": "Booking request submitted successfully"
+        }), 201
+        
     except Exception as e:
-        # Log email error but don't fail the booking
-        print(f"Email sending failed (non-critical): {e}")
-    
-    # Return success response immediately
-    return jsonify({
-        "success": True,
-        "booking_id": new_booking.id,
-        "message": "Booking request submitted successfully"
-    }), 201
+        # Catch any unexpected errors and return JSON instead of HTML error page
+        import traceback
+        print(f"Error in book_slot: {e}")
+        print(traceback.format_exc())
+        return jsonify({
+            "success": False,
+            "error": f"An error occurred: {str(e)}"
+        }), 500
 
 @app.route("/api/calendar/bookings", methods=["GET"])
 @login_required
@@ -1036,3 +1022,6 @@ def get_calendar_bookings():
         'bookings': bookings_data,
         'unavailability_blocks': unavailability_blocks
     })
+
+if __name__ == "__main__":
+    app.run(debug=True)

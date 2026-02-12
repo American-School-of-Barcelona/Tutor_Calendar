@@ -337,8 +337,12 @@ function updateDurationDisplay() {
 
 // Submit booking request
 function submitBooking() {
-    if (!currentBookingSlot) return;
+    if (!currentBookingSlot) {
+        console.error('No booking slot selected');
+        return;
+    }
     
+    console.log('submitBooking called');
     showLoading('Submitting booking request...');
     
     const { dateStr, timeStr } = currentBookingSlot;
@@ -354,6 +358,8 @@ function submitBooking() {
         lesson_minutes: currentDuration
     };
     
+    console.log('Sending booking request:', bookingData);
+    
     fetch('/api/book-slot', {
         method: 'POST',
         headers: {
@@ -362,12 +368,25 @@ function submitBooking() {
         body: JSON.stringify(bookingData)
     })
     .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+        
+        // Check if response is HTML (error page)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            return response.text().then(html => {
+                console.error('Received HTML instead of JSON:', html.substring(0, 200));
+                throw new Error('Server returned HTML error page instead of JSON');
+            });
+        }
+        
         if (!response.ok) {
             return response.json().then(err => Promise.reject(err));
         }
         return response.json();
     })
     .then(data => {
+        console.log('Booking success:', data);
         hideLoading();
         if (data.success) {
             closeBookingModal();
@@ -380,12 +399,12 @@ function submitBooking() {
         }
     })
     .catch(error => {
+        console.error('Booking error:', error);
         hideLoading();
         const errorMsg = error.error || error.message || 'Network error. Please try again.';
         showToast(errorMsg, 'error');
         document.getElementById('booking-error').textContent = errorMsg;
         document.getElementById('booking-error').style.display = 'block';
-        console.error('Error:', error);
     });
 }
 
@@ -518,41 +537,4 @@ function hideLoading() {
         loadingOverlay.remove();
         loadingOverlay = null;
     }
-}
-
-// Update submitBooking to show loading
-function submitBooking() {
-    if (!currentBookingSlot) return;
-    
-    showLoading('Submitting booking request...');
-    
-    // ... existing booking code ...
-    
-    fetch('/api/book-slot', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(bookingData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoading();
-        if (data.success) {
-            closeBookingModal();
-            renderCalendar();
-            showToast('Booking request submitted! Check your email for an approval notification.', 'success');
-        } else {
-            showToast(data.error || 'Failed to submit booking', 'error');
-            document.getElementById('booking-error').textContent = data.error || 'Failed to submit booking';
-            document.getElementById('booking-error').style.display = 'block';
-        }
-    })
-    .catch(error => {
-        hideLoading();
-        showToast('Network error. Please try again.', 'error');
-        document.getElementById('booking-error').textContent = 'Network error. Please try again.';
-        document.getElementById('booking-error').style.display = 'block';
-        console.error('Error:', error);
-    });
 }

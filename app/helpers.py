@@ -90,7 +90,8 @@ def is_within_availability(tutor_id: int, start: datetime, end: datetime, db_ses
         True if booking does NOT overlap any unavailability block (so it is allowed),
         False if it overlaps at least one unavailability block.
     """
-    from app import Availability
+    # Import here to avoid circular import issues
+    from app.app import Availability
     
     booking_start_time = start.time()
     booking_end_time = end.time()
