@@ -1,6 +1,5 @@
 from flask import current_app
 from flask_mail import Message
-from app import mail
 
 def send_email(to, subject, template, **kwargs):
     """
@@ -22,7 +21,7 @@ def send_email(to, subject, template, **kwargs):
         msg.body = template.format(**kwargs)
         msg.html = f"<html><body>{template.format(**kwargs)}</body></html>"
         
-        mail.send(msg)
+        current_app.extensions['mail'].send(msg)
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
