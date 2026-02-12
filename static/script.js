@@ -166,11 +166,16 @@ function checkPastSlots() {
 async function loadBookingColors() {
     try {
         const weekStartISO = currentWeekStart.toISOString();
-        const response = await fetch(`/api/calendar/bookings?week_start=${weekStartISO}`);
+        // Check if user is logged in - use different endpoint for public view
+        const endpoint = window.location.pathname === '/availability' 
+            ? '/api/public/calendar/bookings' 
+            : '/api/calendar/bookings';
+        
+        const response = await fetch(`${endpoint}?week_start=${weekStartISO}`);
         const data = await response.json();
         
         if (data.success && data.bookings) {
-            applyBookingColors(data.bookings);
+            applyBookingColors(data.bookings, data.unavailability_blocks || []);
         }
     } catch (error) {
         console.error('Error loading booking colors:', error);

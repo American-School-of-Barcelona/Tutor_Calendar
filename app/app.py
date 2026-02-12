@@ -53,6 +53,66 @@ def index():
 def availability():
     return render_template("availability.html")
 
+@app.route("/api/public/calendar/bookings", methods=["GET"])
+def get_public_calendar_bookings():
+    """
+    Get bookings for the public calendar view (no login required).
+    Returns bookings for the current week.
+    """
+    from datetime import datetime, timedelta
+    
+    # Get week start from query params or use current week
+    week_start_str = request.args.get('week_start')
+    if week_start_str:
+        try:
+            week_start = datetime.fromisoformat(week_start_str.replace('Z', '+00:00'))
+            if week_start.tzinfo:
+                week_start = week_start.replace(tzinfo=None)
+        except ValueError:
+            week_start = datetime.utcnow()
+    else:
+        week_start = datetime.utcnow()
+    
+    # Calculate week end (7 days later)
+    week_end = week_start + timedelta(days=7)
+    
+    # Get all accepted bookings in this week (only show accepted, not pending)
+    bookings = Booking.query.filter(
+        Booking.start_time >= week_start,
+        Booking.start_time < week_end,
+        Booking.status == "accepted"
+    ).all()
+    
+    # Format bookings for frontend
+    bookings_data = []
+    for booking in bookings:
+        bookings_data.append({
+            'id': booking.id,
+            'start_time': booking.start_time.isoformat(),
+            'end_time': booking.end_time.isoformat(),
+            'status': booking.status,
+            'student_id': booking.student_id
+        })
+    
+    # Get unavailability blocks for tutor
+    tutor = User.query.filter_by(role="admin").first()
+    unavailability_blocks = []
+    if tutor:
+        blocks = Availability.query.filter_by(user_id=tutor.id).all()
+        for block in blocks:
+            unavailability_blocks.append({
+                'start_time': block.start_time.strftime('%H:%M'),
+                'end_time': block.end_time.strftime('%H:%M'),
+                'repeat_rule': block.repeat_rule,
+                'repeat_until': block.repeat_until.isoformat() if block.repeat_until else None
+            })
+    
+    return jsonify({
+        'success': True,
+        'bookings': bookings_data,
+        'unavailability_blocks': unavailability_blocks
+    })
+
 # The route to handle date selection
 @app.route("/select_date", methods=["POST"])
 def select_date():

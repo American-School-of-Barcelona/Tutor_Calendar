@@ -35,8 +35,10 @@
                         </div>
                     {% endfor %}
                 </div>
-            {% else %}
-                <p>No pending sign-up requests.</p>
+                {% else %}
+                <p class="bookings-empty" style="display: block; text-align: center; font-size: 20px; padding: 60px 20px;">
+                    No pending sign-up requests.
+                </p>
             {% endif %}
         </div>
     </div>

@@ -557,6 +557,7 @@
     display: flex;
     gap: 12px;
     align-items: center;
+    justify-content: flex-start;
 }
 
 .nav-tab {
@@ -1461,7 +1462,7 @@
     
     .nav-tabs {
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
     }
     
     .nav-tab {
@@ -1563,4 +1564,31 @@
     .booking-action-btn {
         width: 100%;
     }
+}
+
+/* Center and enlarge empty state messages */
+.bookings-empty,
+.booking-empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: #666666;
+}
+
+.pending-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.user-request-card {
+    background: #fff8ec;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0d2bc;
 }

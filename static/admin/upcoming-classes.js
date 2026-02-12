@@ -95,6 +95,7 @@ function loadClasses() {
                 renderClasses(data.bookings);
             } else {
                 console.error('Failed to load classes:', data.error);
+                document.getElementById('classes-loading').textContent = 'Error loading classes. Please refresh.';
             }
         })
         .catch(error => {
