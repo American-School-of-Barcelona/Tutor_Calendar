@@ -16,13 +16,7 @@ from .email_service import (
     send_new_signup_request_notification_email,
 )
 
-from dotenv import load_dotenv
-from pathlib import Path
-
 import os
-
-env_path = Path(__file__).resolve().parents[1] / 'config' / '.env'
-load_dotenv(dotenv_path=env_path)
 
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
