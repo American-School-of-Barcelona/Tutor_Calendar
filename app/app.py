@@ -945,24 +945,32 @@ def book_slot():
     db.session.add(new_booking)
     db.session.commit()
 
-    student = User.query.get(current_user.id)
-    duration_hours = lesson_minutes // 60
-    time_str = start_time.strftime("%Y-%m-%d %H:%M")
-    send_booking_submitted_email(
-        student_email=student.email,
-        student_name=student.username or student.email,
-        booking_time=time_str,
-        duration=duration_hours
-    )
-    
-    admin = User.query.filter_by(role="admin").first()
-    if admin:
-        send_new_booking_notification_email(
-            admin_email=admin.email,
+    # Send emails asynchronously (don't block the response)
+    try:
+        student = User.query.get(current_user.id)
+        duration_hours = lesson_minutes // 60
+        time_str = start_time.strftime("%Y-%m-%d %H:%M")
+        
+        # Send emails - these won't block even if they fail
+        send_booking_submitted_email(
+            student_email=student.email,
             student_name=student.username or student.email,
-            booking_time=time_str
+            booking_time=time_str,
+            duration=duration_hours
         )
+        
+        admin = User.query.filter_by(role="admin").first()
+        if admin:
+            send_new_booking_notification_email(
+                admin_email=admin.email,
+                student_name=student.username or student.email,
+                booking_time=time_str
+            )
+    except Exception as e:
+        # Log email error but don't fail the booking
+        print(f"Email sending failed (non-critical): {e}")
     
+    # Return success response immediately
     return jsonify({
         "success": True,
         "booking_id": new_booking.id,

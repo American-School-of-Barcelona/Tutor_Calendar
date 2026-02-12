@@ -1,5 +1,6 @@
 from flask import current_app
 from flask_mail import Message
+import threading
 
 def send_email(to, subject, template, **kwargs):
     """
@@ -21,7 +22,9 @@ def send_email(to, subject, template, **kwargs):
         msg.body = template.format(**kwargs)
         msg.html = f"<html><body>{template.format(**kwargs)}</body></html>"
         
-        current_app.extensions['mail'].send(msg)
+        # Send email with timeout protection
+        mail_instance = current_app.extensions['mail']
+        mail_instance.send(msg)
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
@@ -41,20 +44,18 @@ def send_email_safe(to, subject, template, *format_args, **format_kwargs):
 def send_booking_submitted_email(student_email, student_name, booking_time, duration):
     """Send email when student submits a booking request."""
     subject = "Booking Request Submitted"
-    template = f"""
-Hello {student_name},
+    template = """Hello {},
 
 Your booking request has been submitted successfully!
 
 Details:
-- Time: {booking_time}
-- Duration: {duration} hours
+- Time: {}
+- Duration: {} hours
 
 Your request is now pending admin approval. You will receive another email once your booking is approved or denied.
 
-Thank you for using Tutomatics!
-"""
-    return send_email(student_email, subject, template)
+Thank you for using Tutomatics!"""
+    return send_email_safe(student_email, subject, template, student_name, booking_time, duration)
 
 def send_booking_approved_email(student_email, student_name, booking_time, duration, price):
     """Send email when admin approves a booking."""
@@ -92,19 +93,17 @@ Thank you for using Tutomatics!
 def send_new_booking_notification_email(admin_email, student_name, booking_time):
     """Send email to admin when a new booking request is submitted."""
     subject = "New Booking Request"
-    template = f"""
-Hello Admin,
+    template = """Hello Admin,
 
 A new booking request has been submitted:
 
-- Student: {student_name}
-- Time: {booking_time}
+- Student: {}
+- Time: {}
 
 Please log in to review and approve/deny this request.
 
-Tutomatics Admin Panel
-"""
-    return send_email(admin_email, subject, template)
+Tutomatics Admin Panel"""
+    return send_email_safe(admin_email, subject, template, student_name, booking_time)
 
 def send_signup_approved_email(user_email, user_name):
     subject = "Signup Approved"
