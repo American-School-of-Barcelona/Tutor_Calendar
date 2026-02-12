@@ -762,6 +762,105 @@ def admin_signup_approvals():
     pending_users = User.query.filter_by(status="pending").all()
     return render_template("admin/signup-approvals.html", pending_users=pending_users)
 
+@app.route("/api/admin/unavailability", methods=["GET"])
+@admin_required
+def get_unavailability_blocks():
+    """
+    Get all unavailability blocks for the admin.
+    """
+    tutor = User.query.filter_by(role="admin").first()
+    if not tutor:
+        return jsonify({"success": False, "error": "No tutor found"}), 404
+    
+    blocks = Availability.query.filter_by(user_id=tutor.id).all()
+    
+    blocks_data = []
+    for block in blocks:
+        blocks_data.append({
+            'id': block.id,
+            'start_time': block.start_time.strftime('%H:%M'),
+            'end_time': block.end_time.strftime('%H:%M'),
+            'repeat_rule': block.repeat_rule,
+            'repeat_until': block.repeat_until.isoformat() if block.repeat_until else None
+        })
+    
+    return jsonify({"success": True, "blocks": blocks_data})
+
+@app.route("/api/admin/unavailability", methods=["POST"])
+@admin_required
+def create_unavailability_block():
+    """
+    Create a new unavailability block.
+    """
+    tutor = User.query.filter_by(role="admin").first()
+    if not tutor:
+        return jsonify({"success": False, "error": "No tutor found"}), 404
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "No data provided"}), 400
+    
+    start_time_str = data.get("start_time")
+    end_time_str = data.get("end_time")
+    repeat_rule = data.get("repeat_rule", "none")
+    repeat_until_str = data.get("repeat_until")
+    
+    if not start_time_str or not end_time_str:
+        return jsonify({"success": False, "error": "Missing start_time or end_time"}), 400
+    
+    try:
+        start_time = datetime.strptime(start_time_str, '%H:%M').time()
+        end_time = datetime.strptime(end_time_str, '%H:%M').time()
+        
+        if start_time >= end_time:
+            return jsonify({"success": False, "error": "End time must be after start time"}), 400
+        
+        repeat_until = None
+        if repeat_until_str:
+            repeat_until = datetime.fromisoformat(repeat_until_str.replace('Z', '+00:00'))
+            if repeat_until.tzinfo:
+                repeat_until = repeat_until.replace(tzinfo=None)
+        
+        new_block = Availability(
+            user_id=tutor.id,
+            start_time=start_time,
+            end_time=end_time,
+            repeat_rule=repeat_rule,
+            repeat_until=repeat_until
+        )
+        
+        db.session.add(new_block)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "block_id": new_block.id
+        })
+    except ValueError as e:
+        return jsonify({"success": False, "error": f"Invalid time format: {str(e)}"}), 400
+
+@app.route("/api/admin/unavailability/<int:block_id>", methods=["DELETE"])
+@admin_required
+def delete_unavailability_block(block_id):
+    """
+    Delete an unavailability block.
+    """
+    tutor = User.query.filter_by(role="admin").first()
+    if not tutor:
+        return jsonify({"success": False, "error": "No tutor found"}), 404
+    
+    block = Availability.query.get(block_id)
+    if not block:
+        return jsonify({"success": False, "error": "Block not found"}), 404
+    
+    if block.user_id != tutor.id:
+        return jsonify({"success": False, "error": "Unauthorized"}), 403
+    
+    db.session.delete(block)
+    db.session.commit()
+    
+    return jsonify({"success": True})
+
 if __name__ == "__main__":
     app.run(debug=True)
 
@@ -917,7 +1016,21 @@ def get_calendar_bookings():
             'student_id': booking.student_id
         })
     
+    # Get unavailability blocks for tutor
+    tutor = User.query.filter_by(role="admin").first()
+    unavailability_blocks = []
+    if tutor:
+        blocks = Availability.query.filter_by(user_id=tutor.id).all()
+        for block in blocks:
+            unavailability_blocks.append({
+                'start_time': block.start_time.strftime('%H:%M'),
+                'end_time': block.end_time.strftime('%H:%M'),
+                'repeat_rule': block.repeat_rule,
+                'repeat_until': block.repeat_until.isoformat() if block.repeat_until else None
+            })
+    
     return jsonify({
         'success': True,
-        'bookings': bookings_data
+        'bookings': bookings_data,
+        'unavailability_blocks': unavailability_blocks
     })

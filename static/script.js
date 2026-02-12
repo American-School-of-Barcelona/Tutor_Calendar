@@ -177,7 +177,7 @@ async function loadBookingColors() {
     }
 }
 
-function applyBookingColors(bookings) {
+function applyBookingColors(bookings, unavailabilityBlocks = []) {
     const cells = document.querySelectorAll('#calendar td[data-date][data-time]');
     
     cells.forEach(cell => {
@@ -193,6 +193,33 @@ function applyBookingColors(bookings) {
         const slotStart = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
         const slotEnd = new Date(slotStart);
         slotEnd.setMinutes(slotEnd.getMinutes() + 15); // 15-minute slot
+        
+        // Check if this slot overlaps with any unavailability block
+        let isUnavailable = false;
+        for (const block of unavailabilityBlocks) {
+            const blockStart = parseTime(block.start_time);
+            const blockEnd = parseTime(block.end_time);
+            
+            const blockStartDate = new Date(year, month - 1, day, blockStart.hours, blockStart.minutes, 0, 0);
+            const blockEndDate = new Date(year, month - 1, day, blockEnd.hours, blockEnd.minutes, 0, 0);
+            
+            // Handle blocks that span midnight
+            if (blockEnd.hours < blockStart.hours) {
+                blockEndDate.setDate(blockEndDate.getDate() + 1);
+            }
+            
+            if (slotStart < blockEndDate && slotEnd > blockStartDate) {
+                isUnavailable = true;
+                break;
+            }
+        }
+        
+        if (isUnavailable) {
+            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted');
+            cell.classList.add('slot-unavailable');
+            cell.style.cursor = 'not-allowed';
+            return;
+        }
         
         // Check if this slot overlaps with any booking
         let slotStatus = 'available';
@@ -223,6 +250,20 @@ function applyBookingColors(bookings) {
             cell.classList.add('slot-accepted');
         }
     });
+}
+
+async function loadBookingColors() {
+    try {
+        const weekStartISO = currentWeekStart.toISOString();
+        const response = await fetch(`/api/calendar/bookings?week_start=${weekStartISO}`);
+        const data = await response.json();
+        
+        if (data.success && data.bookings) {
+            applyBookingColors(data.bookings, data.unavailability_blocks || []);
+        }
+    } catch (error) {
+        console.error('Error loading booking colors:', error);
+    }
 }
 
 let currentBookingSlot = null;

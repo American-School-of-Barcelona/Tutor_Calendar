@@ -83,39 +83,28 @@ def slots_overlap(start1: datetime, end1: datetime, start2: datetime, end2: date
 
 def is_within_availability(tutor_id: int, start: datetime, end: datetime, db_session) -> bool:
     """
-    Check if a booking time slot falls within tutor's availability blocks.
-    Note: This is a simplified check. For now, we'll check if the booking
-    time falls within any availability block for the given day.
-    
-    Args:
-        tutor_id: ID of the tutor/admin
-        start: Booking start time
-        end: Booking end time
-        db_session: Database session object
+    Check if a booking time slot does NOT conflict with any tutor unavailability blocks.
+    Each Availability row is treated as a blocked interval where the tutor is not available.
     
     Returns:
-        True if booking is within availability, False otherwise
+        True if booking does NOT overlap any unavailability block (so it is allowed),
+        False if it overlaps at least one unavailability block.
     """
     from app import Availability
     
-    # Get the day of the week (0=Monday, 6=Sunday)
-    booking_day = start.weekday()
     booking_start_time = start.time()
     booking_end_time = end.time()
     
-    # Query availability blocks for this tutor
-    availabilities = db_session.query(Availability).filter_by(user_id=tutor_id).all()
+    blocks = db_session.query(Availability).filter_by(user_id=tutor_id).all()
     
-    if not availabilities:
-        # No availability set = tutor is available all day (for now)
+    if not blocks:
         return True
     
-    # Check if booking time falls within any availability block
-    for avail in availabilities:
-        if avail.start_time <= booking_start_time and booking_end_time <= avail.end_time:
-            return True
+    for block in blocks:
+        if booking_start_time < block.end_time and booking_end_time > block.start_time:
+            return False
     
-    return False
+    return True
 
 def get_booking_color(status: str) -> str:
     """

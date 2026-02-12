@@ -1173,6 +1173,104 @@
     transform: translateY(0);
 }
 
+/* Unavailability Management Styles */
+.unavailability-section {
+    margin-top: 40px;
+    padding: 24px;
+    background: #fff8ec;
+    border-radius: 12px;
+    border: 1px solid #e0d2bc;
+}
+
+.unavailability-section h2 {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+.unavailability-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.unavailability-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.unavailability-form-row label {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+}
+
+.unavailability-form-row input,
+.unavailability-form-row select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e0d2bc;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+.unavailability-blocks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.unavailability-block-item {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0d2bc;
+}
+
+.unavailability-block-info {
+    flex: 1;
+}
+
+.unavailability-block-time {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 4px;
+}
+
+.unavailability-block-repeat {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    color: #666666;
+}
+
+.unavailability-block-delete {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #ffcdd2;
+    color: #c62828;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease;
+}
+
+.unavailability-block-delete:hover {
+    background: #ef9a9a;
+}
+
 /* Toast Notification System */
 .toast-container {
     position: fixed;

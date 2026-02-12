@@ -29,6 +29,37 @@
                 <tbody id="calendar-body">
                 </tbody>
             </table>
+            
+            <div class="unavailability-section">
+                <h2>Manage Unavailability</h2>
+                <div class="unavailability-form">
+                    <div class="unavailability-form-row">
+                        <label>Start Time:</label>
+                        <input type="time" id="block-start-time" required>
+                    </div>
+                    <div class="unavailability-form-row">
+                        <label>End Time:</label>
+                        <input type="time" id="block-end-time" required>
+                    </div>
+                    <div class="unavailability-form-row">
+                        <label>Repeat:</label>
+                        <select id="block-repeat">
+                            <option value="none">One-time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                    <button id="add-block-btn" class="booking-btn booking-btn-confirm">Add Block</button>
+                </div>
+                
+                <div id="blocks-loading" class="bookings-loading">Loading blocks...</div>
+                <div id="blocks-empty" class="bookings-empty" style="display: none;">
+                    No unavailability blocks set.
+                </div>
+                <div id="blocks-list" class="unavailability-blocks-list"></div>
+            </div>
+            
+            <script src="{{ url_for('static', filename='admin/admin-unavailability.js') }}"></script>
         </div>
     </div>
     
