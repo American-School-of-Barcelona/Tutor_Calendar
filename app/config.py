@@ -6,12 +6,18 @@ from pathlib import Path
 env_path = Path(__file__).resolve().parents[1] / 'config' / '.env'
 load_dotenv(dotenv_path=env_path)
 
+# Get the project root directory (one level up from app/)
+project_root = Path(__file__).resolve().parents[1]
+instance_dir = project_root / 'instance'
+instance_dir.mkdir(exist_ok=True)  # Create instance directory if it doesn't exist
+db_path = instance_dir / 'app.db'
+
 class Config:
     # Secret key for session management
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///instance/app.db')
+    # Database configuration - use absolute path
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f'sqlite:///{db_path}')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Mail configuration

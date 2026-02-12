@@ -700,6 +700,50 @@
     margin-left: auto; /* logout button to the right */
 }
 
+/* Classes Tab Styles */
+.classes-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e0d2bc;
+}
+
+.classes-tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    color: #666666;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 150ms ease, border-color 150ms ease;
+    margin-bottom: -2px;
+}
+
+.classes-tab-btn:hover {
+    color: #333333;
+}
+
+.classes-tab-btn.active {
+    color: #f1c27d;
+    border-bottom-color: #f1c27d;
+}
+
+.classes-section {
+    display: none;
+}
+
+.classes-section.active {
+    display: block;
+}
+
+.countdown-timer {
+    color: #e0a85c;
+    font-weight: 600;
+}
+
 /* Booking Modal Styles */
 .booking-modal {
     display: none;

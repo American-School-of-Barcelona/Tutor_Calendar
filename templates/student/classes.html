@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Classes - Tutomatics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    {% include 'partials/nav.html' %}
+    
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">My Classes</h1>
+        
+        <div class="dashboard-nav-row">
+            <nav class="dashboard-tabs">
+                <a href="/student/home" class="tab-link">Home</a>
+                <a href="/student/calendar" class="tab-link">Calendar View</a>
+                <a href="/student/classes" class="tab-link active">Classes</a>
+                <a href="/student/history" class="tab-link">History</a>
+            </nav>
+        </div>
+        
+        <div class="dashboard-content">
+            <div class="classes-tabs">
+                <button class="classes-tab-btn active" data-tab="upcoming">Upcoming Classes</button>
+                <button class="classes-tab-btn" data-tab="past">Past Classes</button>
+            </div>
+            
+            <div id="upcoming-classes" class="classes-section active">
+                <div id="upcoming-loading" class="bookings-loading">Loading upcoming classes...</div>
+                <div id="upcoming-empty" class="bookings-empty" style="display: none;">
+                    <p>You have no upcoming classes.</p>
+                    <p><a href="/student/calendar" style="color: #f1c27d; text-decoration: underline;">Book a lesson now</a></p>
+                </div>
+                <div id="upcoming-list" class="student-bookings-list"></div>
+            </div>
+            
+            <div id="past-classes" class="classes-section" style="display: none;">
+                <div id="past-loading" class="bookings-loading">Loading past classes...</div>
+                <div id="past-empty" class="bookings-empty" style="display: none;">
+                    <p>You have no past classes.</p>
+                </div>
+                <div id="past-list" class="student-bookings-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='student/student-classes.js') }}"></script>
+</body>
+</html>

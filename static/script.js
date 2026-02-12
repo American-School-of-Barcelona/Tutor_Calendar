@@ -339,6 +339,8 @@ function updateDurationDisplay() {
 function submitBooking() {
     if (!currentBookingSlot) return;
     
+    showLoading('Submitting booking request...');
+    
     const { dateStr, timeStr } = currentBookingSlot;
     const slotTime = parseTime(timeStr);
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -359,9 +361,14 @@ function submitBooking() {
         },
         body: JSON.stringify(bookingData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
     .then(data => {
-    
+        hideLoading();
         if (data.success) {
             closeBookingModal();
             renderCalendar();
@@ -373,7 +380,10 @@ function submitBooking() {
         }
     })
     .catch(error => {
-        document.getElementById('booking-error').textContent = 'Network error. Please try again.';
+        hideLoading();
+        const errorMsg = error.error || error.message || 'Network error. Please try again.';
+        showToast(errorMsg, 'error');
+        document.getElementById('booking-error').textContent = errorMsg;
         document.getElementById('booking-error').style.display = 'block';
         console.error('Error:', error);
     });
