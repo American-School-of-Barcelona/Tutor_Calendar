@@ -834,29 +834,29 @@ def admin_cancel_booking(booking_id):
     booking.status = "cancelled"
     db.session.commit()
 
-    # Send cancellation email to student
-    student = booking.student
-    time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
-    duration_hours = booking.lesson_minutes // 60
+        # Send cancellation email to student
+    try:
+        student = booking.student
+        if student:
+            time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
+            duration_hours = booking.lesson_minutes // 60
+            student_name = student.username if student.username else student.email
+            
+            # Create cancellation email
+            from app.email_service import send_email_safe
+            send_email_safe(
+                student.email,
+                "Class Cancelled",
+                "Hello {},\n\nUnfortunately, your class scheduled for {} ({} hours) has been cancelled.\n\nIf you have any questions, please contact us.\n\nThank you for your understanding.",
+                student_name,
+                time_str,
+                str(duration_hours)
+            )
+    except Exception as e:
+        # Log error but don't fail the cancellation
+        print(f"Error sending cancellation email: {e}")
     
-    # Create cancellation email
-    from app.email_service import send_email_safe
-    send_email_safe(
-        to=student.email,
-        subject="Class Cancelled",
-        template="""Hello {},
-
-Unfortunately, your class scheduled for {} ({} hours) has been cancelled.
-
-If you have any questions, please contact us.
-
-Thank you for your understanding.""",
-        
-        student.username or student.email,
-        time_str,
-        duration_hours
-    )
-    
+    # Return success response
     return jsonify({
         "success": True,
         "message": "Class cancelled successfully"
