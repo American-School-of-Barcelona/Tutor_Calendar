@@ -107,6 +107,11 @@ def is_within_availability(tutor_id: int, start: datetime, end: datetime, db_ses
     
     return True
 
+def is_within_24h_of_booking(start_time) -> bool:
+    now = datetime.utcnow()
+    delta = (start_time - now).total_seconds()
+    return 0 < delta <= 24 * 3600
+
 def get_booking_color(status: str) -> str:
     """
     Get CSS color class name for booking status.

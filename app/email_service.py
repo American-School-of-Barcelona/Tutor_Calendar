@@ -141,3 +141,17 @@ Please log in to review and approve/deny this signup.
 
 Tutomatics Admin Panel"""
     return send_email_safe(admin_email, subject, template, user_name, user_email)
+
+def send_new_admin_signup_request_notification_email(admin_email, user_name, user_email):
+    subject = "New Admin Signup Request"
+    template = """Hello Admin,
+
+A new admin signup request has been submitted:
+
+- Name: {}
+- Email: {}
+
+Please log in to Sign-up Approvals to approve or deny this admin account.
+
+Tutomatics Admin Panel"""
+    return send_email_safe(admin_email, subject, template, user_name, user_email)

@@ -62,7 +62,7 @@ function renderClasses(bookings) {
     empty.style.display = 'none';
     
     container.innerHTML = bookings.map(booking => `
-        <div class="booking-item" data-booking-id="${booking.id}">
+            <div class="booking-item" data-booking-id="${booking.id}" data-start-time="${booking.start_time}" data-price-eur="${booking.price_eur || ''}">
             <div class="booking-item-info">
                 <div class="booking-item-header">
                     <h3 class="booking-student-name">${escapeHtml(booking.student_name || 'Unknown Student')}</h3>
@@ -104,14 +104,26 @@ function renderClasses(bookings) {
 }
 
 // Handle cancel class
+function isWithin24h(isoStart) {
+    const start = new Date(isoStart);
+    const now = new Date();
+    const diffMs = start - now;
+    return diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000;
+}
+
 function handleCancelClass(event) {
     const bookingId = event.target.getAttribute('data-id');
     const bookingItem = event.target.closest('.booking-item');
-    
-    if (!confirm('Are you sure you want to cancel this class? The student will be notified.')) {
+    const startTime = bookingItem.getAttribute('data-start-time');
+    const priceEur = bookingItem.getAttribute('data-price-eur') || '0';
+    const within24h = startTime && isWithin24h(startTime);
+    const msg = within24h
+        ? 'This class is within 24 hours. The student may still be charged (' + priceEur + '€). Cancel anyway? The student will be notified.'
+        : 'Are you sure you want to cancel this class? The student will be notified.';
+    if (!confirm(msg)) {
         return;
     }
-    
+
     fetch(`/admin/bookings/${bookingId}/cancel`, {
         method: 'POST',
         headers: {
@@ -121,6 +133,9 @@ function handleCancelClass(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            if (data.within_24h) {
+                alert('Class cancelled. Cancelling within 24 hours may result in the lesson fee being charged.');
+            }
             bookingItem.style.opacity = '0.5';
             bookingItem.style.pointerEvents = 'none';
             setTimeout(() => {

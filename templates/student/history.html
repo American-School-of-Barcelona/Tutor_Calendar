@@ -15,11 +15,25 @@
         <h1 class="dashboard-title">History</h1>
         
         <div class="dashboard-content">
+            <div class="history-toolbar">
+                <label for="history-status">Status:</label>
+                <select id="history-status">
+                    <option value="">All</option>
+                    <option value="accepted">Completed</option>
+                    <option value="denied">Denied</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <label for="history-sort">Sort:</label>
+                <select id="history-sort">
+                    <option value="date_desc">Newest first</option>
+                    <option value="date_asc">Oldest first</option>
+                </select>
+            </div>
             <div id="history-loading" class="bookings-loading">Loading your history...</div>
             <div id="history-empty" class="bookings-empty" style="display: none;">
                 <p>You have no past bookings.</p>
             </div>
-            
+
             <div id="history-list" class="student-bookings-list"></div>
         </div>
     </div>

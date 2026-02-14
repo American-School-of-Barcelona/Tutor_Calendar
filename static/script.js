@@ -2,7 +2,7 @@ const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
 
 
 const DAY_START_HOUR = 8;      // 8:00 AM
-const DAY_END_HOUR = 20;       // 8:00 PM
+const DAY_END_HOUR = 22;       // 10:00 PM
 const SLOT_INTERVAL_MINUTES = 15;
 
 function generateTimeSlots() {

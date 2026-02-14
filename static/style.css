@@ -1602,3 +1602,8 @@
     align-items: center;
     border: 1px solid #e0d2bc;
 }
+
+/* Spacing for hero buttons*/
+.hero-cta-secondary {
+    margin-left: 12px;
+}

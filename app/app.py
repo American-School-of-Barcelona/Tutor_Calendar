@@ -1,11 +1,10 @@
-from flask import Flask, jsonify, request, render_template, session, redirect, url_for, flash
+from flask import Flask, jsonify, request, render_template, session, redirect, url_for, flash, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color
-
+from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color, is_within_24h_of_booking
 from .email_service import (
     send_booking_submitted_email,
     send_booking_approved_email,
@@ -14,6 +13,7 @@ from .email_service import (
     send_signup_approved_email,
     send_signup_denied_email,
     send_new_signup_request_notification_email,
+    send_new_admin_signup_request_notification_email,
 )
 
 import os
@@ -414,27 +414,46 @@ def signup():
             return render_template("signup.html"), 400
 
         hashed = generate_password_hash(password)
-
-        new_user = User(
-            username=username,
-            email=email,
-            password_hash=hashed,
-            role="student",
-            status="pending"
-        )
+        admin_code = request.form.get("admin_code", "").strip()
+        secret = current_app.config.get("ADMIN_SIGNUP_SECRET") or ""
+        if secret and admin_code == secret:
+            new_user = User(
+                username=username,
+                email=email,
+                password_hash=hashed,
+                role="admin",
+                status="pending"
+            )
+        else:
+            new_user = User(
+                username=username,
+                email=email,
+                password_hash=hashed,
+                role="student",
+                status="pending"
+            )
 
         db.session.add(new_user)
         db.session.commit()
 
-        admins = User.query.filter_by(role="admin").all()
-        for admin in admins:
-            send_new_signup_request_notification_email(
-                admin_email=admin.email,
-                user_name=new_user.username or new_user.email,
-                user_email=new_user.email,
-            )
-
-        flash("Sign up request submitted! Check your email for an approval notification", "success")
+        if new_user.role == "admin":
+            admins = User.query.filter_by(role="admin").all()
+            for admin in admins:
+                send_new_admin_signup_request_notification_email(
+                    admin_email=admin.email,
+                    user_name=new_user.username or new_user.email,
+                    user_email=new_user.email,
+                )
+            flash("Admin signup submitted. You can log in after an existing admin approves your account.", "success")
+        else:
+            admins = User.query.filter_by(role="admin").all()
+            for admin in admins:
+                send_new_signup_request_notification_email(
+                    admin_email=admin.email,
+                    user_name=new_user.username or new_user.email,
+                    user_email=new_user.email,
+                )
+            flash("Sign up request submitted! Check your email for an approval notification", "success")
         return redirect("/")
 
     return render_template("signup.html")
@@ -644,13 +663,22 @@ def student_history_api():
     """
     if current_user.status != "approved":
         return jsonify({"success": False, "error": "Unauthorized"}), 403
-    
+
     now = datetime.utcnow()
-    bookings = Booking.query.filter(
+    q = Booking.query.filter(
         Booking.student_id == current_user.id,
         Booking.end_time < now
-    ).order_by(Booking.start_time.desc()).all()
-    
+    )
+    status_filter = request.args.get("status", "").strip().lower()
+    if status_filter and status_filter in ("pending", "accepted", "denied", "cancelled"):
+        q = q.filter(Booking.status == status_filter)
+    sort = request.args.get("sort", "date_desc").strip().lower()
+    if sort == "date_asc":
+        q = q.order_by(Booking.start_time.asc())
+    else:
+        q = q.order_by(Booking.start_time.desc())
+
+    bookings = q.all()
     bookings_data = []
     for booking in bookings:
         bookings_data.append({
@@ -662,7 +690,7 @@ def student_history_api():
             'status': booking.status,
             'created_at': booking.created_at.isoformat()
         })
-    
+
     return jsonify({"success": True, "bookings": bookings_data})
 
 @app.route("/student/bookings/<int:booking_id>/cancel", methods=["POST"])
@@ -687,10 +715,11 @@ def cancel_booking(booking_id):
     
     booking.status = "cancelled"
     db.session.commit()
-    
+    within_24h = is_within_24h_of_booking(booking.start_time)
     return jsonify({
         "success": True,
-        "message": "Booking cancelled successfully"
+        "message": "Booking cancelled successfully",
+        "within_24h": within_24h
     })
 
 @app.route("/admin/calendar")
@@ -833,8 +862,9 @@ def admin_cancel_booking(booking_id):
     
     booking.status = "cancelled"
     db.session.commit()
+    within_24h = is_within_24h_of_booking(booking.start_time)
 
-        # Send cancellation email to student
+    # Send cancellation email to student
     try:
         student = booking.student
         if student:
@@ -859,7 +889,8 @@ def admin_cancel_booking(booking_id):
     # Return success response
     return jsonify({
         "success": True,
-        "message": "Class cancelled successfully"
+        "message": "Class cancelled successfully",
+        "within_24h": within_24h
     })
 
 @app.route("/admin/signup-approvals")
@@ -1039,6 +1070,9 @@ def book_slot():
         now_utc = datetime.utcnow()
         if start_time < now_utc:
             return jsonify({"success": False, "error": "Cannot book past time slots"}), 400
+        min_start = now_utc + timedelta(hours=3)
+        if start_time < min_start:
+            return jsonify({"success": False, "error": "Booking must be at least 3 hours in advance"}), 400
         
         # Calculate end time
         end_time = start_time + timedelta(minutes=lesson_minutes)
@@ -1083,6 +1117,23 @@ def book_slot():
         db.session.add(new_booking)
         db.session.commit()
 
+        student = current_user
+        duration_hours = lesson_minutes // 60
+        booking_time_str = start_time.strftime("%Y-%m-%d %H:%M")
+        send_booking_submitted_email(
+            student_email=student.email,
+            student_name=student.username or student.email,
+            booking_time=booking_time_str,
+            duration=str(duration_hours)
+        )
+        admins = User.query.filter_by(role="admin").all()
+        for admin in admins:
+            send_new_booking_notification_email(
+                admin_email=admin.email,
+                student_name=student.username or student.email,
+                booking_time=booking_time_str
+            )
+
         # Return success response immediately
         return jsonify({
             "success": True,
@@ -1099,66 +1150,6 @@ def book_slot():
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }), 500
-
-@app.route("/api/public/calendar/bookings", methods=["GET"])
-def get_public_calendar_bookings():
-    """
-    Get bookings for the public calendar view (no login required).
-    Returns accepted bookings for the current week (excludes cancelled).
-    """
-    from datetime import datetime, timedelta
-    
-    # Get week start from query params or use current week
-    week_start_str = request.args.get('week_start')
-    if week_start_str:
-        try:
-            week_start = datetime.fromisoformat(week_start_str.replace('Z', '+00:00'))
-            if week_start.tzinfo:
-                week_start = week_start.replace(tzinfo=None)
-        except ValueError:
-            week_start = datetime.utcnow()
-    else:
-        week_start = datetime.utcnow()
-    
-    # Calculate week end (7 days later)
-    week_end = week_start + timedelta(days=7)
-    
-    # Get only accepted bookings in this week (exclude cancelled and pending)
-    bookings = Booking.query.filter(
-        Booking.start_time >= week_start,
-        Booking.start_time < week_end,
-        Booking.status == "accepted"  # Only show accepted bookings
-    ).all()
-    
-    # Format bookings for frontend
-    bookings_data = []
-    for booking in bookings:
-        bookings_data.append({
-            'id': booking.id,
-            'start_time': booking.start_time.isoformat(),
-            'end_time': booking.end_time.isoformat(),
-            'status': booking.status,
-            'student_id': booking.student_id
-        })
-    
-    # Get unavailability blocks for tutor
-    tutor = User.query.filter_by(role="admin").first()
-    unavailability_blocks = []
-    if tutor:
-        blocks = Availability.query.filter_by(user_id=tutor.id).all()
-        for block in blocks:
-            unavailability_blocks.append({
-                'start_time': block.start_time.strftime('%H:%M'),
-                'end_time': block.end_time.strftime('%H:%M'),
-                'repeat_rule': block.repeat_rule,
-                'repeat_until': block.repeat_until.isoformat() if block.repeat_until else None
-            })
-    
-    return jsonify({
-        'success': True,
-        'bookings': bookings_data,
-        'unavailability_blocks': unavailability_blocks
-    })
 
 @app.route("/api/calendar/bookings", methods=["GET"])
 @login_required

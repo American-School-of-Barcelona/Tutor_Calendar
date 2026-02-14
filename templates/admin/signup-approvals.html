@@ -22,6 +22,7 @@
                             <div class="user-info">
                                 <p><strong>Name:</strong> {{ user.username }}</p>
                                 <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Type:</strong> {{ 'Admin' if user.role == 'admin' else 'Student' }}</p>
                                 <p><strong>Requested:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                             </div>
                             <div class="user-actions">
