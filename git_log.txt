@@ -1,0 +1,1119 @@
+commit 45118ebe7ea5299beaf7c7b6b0c2be155203e81b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-14
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-14
+
+    Added:
+    -Admin signup secret config
+    -Admin signup with code and admin-only notification email
+    -“Type” (Admin/Student) on sign-up approvals page
+    -3-hour minimum advance rule for bookings
+    -Booking confirmation email to student and new-booking email to admin
+    -24h cancellation helper and API flag
+    -24h cancellation warning in student and admin cancel flows
+    -History filter by status and sort by date
+    -“See availability” link on homepage
+    -Calendar extended to 10 PM
+    -Hero secondary button spacing (if added)
+    
+    Fixed:
+    - duplicate public calendar route removed
+    - 24 charging policy shown when canceling
+    - history supports filter/sort via API
+
+commit f0fd9382f3354000d244fd49a412ba7dc0fef791
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    previous fixes
+
+commit abaf8dc51b6de8acc7457ae14e215131799a2a5b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - removed "pending requests" text
+    
+    - availability page syncs with bookings and 3h window
+    
+    Added:
+    
+    - upcoming classes shows a card simillar to booking approvals
+    
+    - admin can cancel classes
+    
+    - canceled classes are removed from all calendar views
+
+commit 0d0003634624dae55be42f4f5b3adc7946691552
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - student booking JS path
+    - nav tabs allignment
+    - removed "pending requests" text
+    - made empty state messages centered and larger
+    
+    Added:
+    
+    - public API endpoint for availability page
+
+commit f3b3e9589a8cfd972a285a8090f6fc02353741a0
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    previous fix*
+
+commit c25a4e6c61205dc978fa04d7a98efa4115638ec2
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - removed duplicate tabs from admin and student view
+
+commit adad29e41b2991ca8f4f1a2ce4fbf93b5b2fd4c7
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - replaced tab 3/tab 4 with "my bookings" and "history"
+    
+    - removed dashboard nav row tabs
+    
+    - slots are now unavailable if less than 3h ahead
+    
+    removed 3h validation error in app.py (now handled visuallY)
+    
+    Added:
+    
+    - "upcoming classes" to admin view
+
+commit e85305d57bdc02907907651b5d7576d43d6d7950
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - Circular import error, where now bookings are registered and sent through to the admin view
+
+commit 0ebe15018443931e4a70e6c6b189ef7edde84dfa
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - Booking will not complete even if email fails
+    - The loading indicator will dissapear instead of just staying there
+    - the bookign will also be saved to database
+    - email errors now do not crash the request
+
+commit 412d1a077f4edae8232b44b074456658ddad33f8
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Added:
+    
+    -Classes tab for students to see upcoming and past classes
+
+commit 1caea40be58f37fb8bf0c330dbaa1aa27cc7b711
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    minor fixes as mail system was app was not launching
+
+commit 44eea0474e5ba3fdf92f1f74b3f79c5660974b72
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Fixed:
+    
+    - removed mail import
+    - changed mail.send(msg)
+
+commit 9338cf54cb86fddaf6300e8d5ef5325c1e8e809b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-12
+
+    Added:
+    
+    - A student history page which displays past bookings
+    - Admin API endpoints that create, read, and delete anavailability blocks
+    - Calendar display now shows unavailability blocks as unbookable
+    - In Admin UI there is now a form to manage unavailability blocks on the admin calendar page
+
+commit 852106b32725d14683cfca92a44cc82b6dcbddb6
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Added:
+    
+    - If no availability blocks are defined then bookings are allowed everywhere
+    
+    - once availability blocks are defined any bookings outside those times will be rejected
+
+commit baf9d5fac40730c6a86a43fe992b018a14e67132
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Added:
+    
+    - when student signs up all admns recieve a "new signup request" email
+    - when a student books admins recieve a "new booking request" email
+    
+    Fixed:
+    made sure send_email_safe is properly defined and initialized, so now email failures should not crash requests
+
+commit 47d24ddb144d29975fef2fbcfc461f0d1335e9a3
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Added:
+    
+    - 3h window before a class can be booked to give tutors time to react
+
+commit 9768bf9753ae92433fcba9bdc3917f37f6dfc9b8
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Fixed:
+    - booking approvals page now lists and controls pending bookings via the existing JS
+    - approve and deny will correctly send booking amils using valid user credentials
+    - accepted bookings will appear as taken and unclickable on the calendar
+
+commit d2db7172eb333221ec65db60c35e49d084771814
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Fixed:
+    - students sign up as "pending"
+    - admin approves or denies from the signup approvals page
+    - approved students can log in
+    - pending or denied got clear messages
+    - approval and denial emails are send from my email
+
+commit f57e0f044b30d4b58a3ebf13d3a18981f6d214ff
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-02-10
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-02-10
+
+    Added:
+    - Flask mail
+    - .env class to store email credentials and key
+    - mail initilization in app.py
+    - mail service.py with send_email, send_email_safe, and other booking related email helpers
+
+commit f32ee0855b119879ca8fa34d5b33591f9663048d
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-30
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-30
+
+    Added:
+    - Calendar color coding (CSS classes for booking statuses)
+    - API endpoint /api/calendar/bookings to fetch bookings
+    - JavaScript updates (fetch and apply colors to calendar slots
+    - Toast notifications which will replace alert() with a toast system
+    - Loading states (spinnner during AJAX requests
+    - Responsive design (media quiries for mobile/tablet)
+
+commit 81014fe8a5a75f880ee2fc7fe870135992e610cd
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    - /student/bookings route and template displaying upcoming bookings (pending and accepted) with status badges plus cancel functionality for pending bookings
+    
+    - /student/history route and template displaying past bookings sorted by date descending and status indicators
+    
+    - /api/student/bookings endpoint returning upcoming bookings filtered by student ID and future end times
+    
+    - /api/student/history endpoint returning past bookings filtered by student ID and past end times
+    
+    - /student/bookings/<id>/cancel route allowing students to cancel pending bookings with validation to prevent canceling non-pending bookings
+    
+    - student-bookings.js with functions to fetch, render, and format upcoming bookings with cancel button functionality. Additionally student-history.js was made to fetch and render past bookings in chronological order
+    
+    - CSS styling for student booking views with status badges, card layout, and cancel button styling matching Tutomatics theme
+
+commit 9015b30fa3603d5cfaccd250a2b8535ef22aa62e
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    .
+
+commit 1730dffcf431ed0849598df5e481d3f200c9bc03
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    - /api/admin/bookings endpoint that returns pending bookings as JSON with student information, formatted for admin display
+    
+    - booking approvals UI with card-based layout showing student name, email, date/time range, duration, price, and request timestamp
+    
+    - approve/deny action buttons with confirmation dialogs and visual feedback on booking items
+    
+    - /admin/bookings/<id>/approve route that approves bookings and automatically denies conflicting pending bookings to prevent double-booking, as well as deny route that updates booking status to denied
+    
+    - admin-bookings.js with functions to fetch bookings, render booking list, format dates/times, and handle approve/deny actions via fetch API
+    
+    - CSS styling for booking list with pastel color scheme, hover effects, and responsive grid layout for booking details
+
+commit 1273eba862aea0176915bfc372ecdca920ec1cb2
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Fixed:
+    end_time calculation in app.py
+
+commit 916f89a768ce21577f16cf999c37fd30ea08d821
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    - booking modal HTML structure to student calendar template with duration controls, price display, and confirm/cancel actions.
+    
+    - CSS styling for booking modal with fade-in animation, overlay backdrop, and pastel themed button styles
+    
+    - JavaScript functions for opening/closing modal, duration increment/decrement controls, and real time price calculation based on lesson duration
+    
+    - frontend validation for duration limits (2-4 hours) and time range formatting for display
+    
+    - /api/book-slot backend endpoint that validates booking requests, checks for conflicts with existing accepted bookings, calculates price using helper function, and creates pending booking records
+    
+    - modal with calendar cell click events, replacing previous toggle selection behavior with booking flow
+
+commit 9c64cbe0b728f94856d67a2004a04524132c0fd6
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Fixed:
+    time slot generation in script.js from a fixed list of hourly times to a dynamic version that creates 15min intervals between configurable start and end hours
+
+commit 539bdd860636222c7599b2466bbf14a166a36d6f
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    __init__.py file so python recognizes app/ as a package
+
+commit c8bbabc64dd3b918487df56ba0c59718226056f6
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    Database migration
+    BOOKING_RULES.md file to clearly outline the set of rules for booking a lesson
+
+commit a8205ed0cf82ef132c80237051d574e5182658fc
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    Helper functions to helper.py
+
+commit be5d35b9467da802727886e09fac0a973b138406
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-21
+
+    Added:
+    new elements to booking class in order to begin implementing working booking system
+
+commit e7317779b346ac00ee03b648ec390215d64b1028
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    Fixed:
+    - error message shows up upon opening page
+
+commit 43d9fc111ce2e9c24416dadf60fbb962213f1298
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    Fixed:
+    - the signup free button no longer shows up on home page after logged in
+    - when not logged in, the navigation will show: Home, See Availability, Signup, Login
+    - when logged in, the navigation will show: Home, Calendar View, role-specific tabs, Logout
+
+commit 902d2542712328ee51041f70eba8d5d0ac5821e7
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    Fixed:
+    - removed {% include 'partials/nav.html' %} from signup/login.htm which should fix the login and signup page issue.
+
+commit 1476ea42aed603aafc198c1c684a4c18dff71b8e
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    tabs not showing up issue should have been fixed
+
+commit 3f06043979f2a69429202211e90ebff838a6a393
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    Fixed:
+    - All navigation tabs will be in the top bar (where "Tutomatics" sits)
+    - Logged-in users will see Home, Calendar View, role-specific tabs, and Logout
+    - The tabs above the dashboard content will be removed upon login
+    - The navigation will use Flask login current_user instead of session
+
+commit 218e3690d9d0f7fc1f6e5b8b8eb48bbb481d436d
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-08
+
+    Added:
+    - Flask-Login
+    - Loginmanager and user_loader
+    - replaced custom @login_required with the flask login
+    - replaced session[user_id] checks with current user
+    
+    Fixed:
+    - User model inherits from UserMixin
+    - Login uses login_user() and logout uses logout_user()
+    - @admin_required uses current_user
+
+commit 713c5d54f63308df692fee55f0bcd3c73365fc36
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Fixed:
+    Index route
+
+commit c381fb01c58748130a7bfb2e34bdb70dec945777
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Removed:
+    home.html since im now using index.html for everything
+
+commit 1e8e9c479a015da26cb0bd635a4482172935916c
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Fixed:
+    - root route to show homepage
+    - signup/login/logout redirects
+    
+    Added:
+    - public home page
+    - navigation partial that changes based on login status
+    - availability route and template
+    - navigation to all pages
+    - CSS for new navigation and home page
+    - back button for signup and login page which redirects to homepage
+
+commit c3aae85ea32619f02b63860d53743b38fa4682f5
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Fixed:
+    - styling in calendar and approval pages.
+    
+    Added:
+    - week navigation with arrows
+    - day headers with date (e.g. "monday - 4th")
+    - calendar now defeaults to current week
+    - Past slots are shaded and unclickable
+    - Live clock system that checks every minute
+
+commit e48a5b6de0e1993cdf38f77daaf49f5338351afe
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Fixed the SQLAlchamy issue, created routes for admin booking and signup approvals, and created templates for both pages.
+    
+    added approve/deny functionality for pending users, and added CSS styling for user request cards.
+
+commit dd949547ee1562761218faf2b0358bea0dacc4f1
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    ah there was a duplicate logout button CSS...
+
+commit ae0c30725d4e080d69fbeaa7ed40bc689d87d34a
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    made logout tab bigger
+
+commit ab9f73166bed809963a792c4b561ed5fe4272e4d
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    made tabs a lil bigger
+
+commit 8e4ec2b8f2314df89ba296bacedcecf092bd8904
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    God bless everything is working and my project is moving along :)
+    
+    After seeing the admin and student dashboards I made some changes to their appearances in both html files and the style css.
+
+commit 9b36a31fd40a450cd56717fc759d01272416eddb
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    moved the if_name_ == _main_ block to the end of app.py cus it was before the admin-dashboard route which caused routes defined after it to not be registered.
+
+commit ecbf63a7fa98eaaed3ccda86c765b38350bbf9cd
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Now the root route redirects based on role, the shared home page template is created, and admin + student dashboards are updated with correct tabs.
+    
+    Also home page routes are added, home page has been styled to match login theme + calendar pages styled to match theme.
+
+commit ac16c486a4b203f68fd48cf7e60457a52128cb32
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    removed func
+
+commit 5ebb3bfa4c3283bee37e5fd40c97f89f35116865
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    removed old calendar.html aswell as get_calendar_data() function
+
+commit 4e25f22c18c358c9cf6b9d4dd1903a2ab6252f63
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    EVERYTHING WORKED! (sort of)
+    
+    First I went to http://127.0.0.1:5000/check-users and created new users. Then I logged in and it redirecte dme to an error 404 page. after I refreshed I was at the calendar.
+    
+    To fix this I did the following:
+    
+    added separate calendar.htmls for student and admin pages.
+    
+    fixed logour route to use /login instead of url_for('login')
+    
+    redesigned calendar pages to match theme
+    
+    added logout link along with tabs to admin and student pages.
+    
+    updated root route to redirect to the appropriate dashboard
+
+commit df85f869ecccaac6069351bb15fae6177c2b5d92
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Still didnt work, I think the problem is that I am going too far with the whole username thing and should only stick to emails.
+    
+    Added a debug route which will show what raw input is recieved, what parse_email_input returns, aswell as whether the user exists and the password hash is matching up.
+
+commit a1ecc84bf325023916840067babc06ad905768ff
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    Decided to look into ivos code a bit more and changed some things from mine.
+    
+    1. Login queries only by email like Ivo
+    
+    2. parse_email_input always returns an email
+    
+    3. Session uses user.id
+    
+    4. Signup and error handling follows Ivos pattern
+    
+    (fingers corssed I hope this solves it)
+
+commit 087ca6ea8d096770e086f4a2883c46d3b27dea4a
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2026-01-06
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2026-01-06
+
+    fixed query logic where now it will try email first then username.
+    
+    ensured that emails are stored and queried in lowercase
+
+commit 7432b0d6674dc5bcb7aba33448f35f51f56e2869
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-15
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-15
+
+    fixed query logic for login and signup
+
+commit 37a494501cd31609cffe32cc240f9883722f1d31
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-15
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-15
+
+    fixed helpers.py
+
+commit c33394df9946dcfe2729b0899b66aaecec6ce7e5
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    fixed the import error
+
+commit 3749d0ef741448babd732b9f50e183210ec5e96d
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    Added helper.py with three different inputs, updated login, signup and creat test users routes, and improved error handling.
+
+commit d180cd83b43ace9ec6e7403b140f75392615aff5
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    fixed the create test users @app.route
+
+commit 8c08d370d17a73d8edbfbdc04432e08bf4ec7a6c
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    Added a check users debug route to fix the "invalid email/password" error.
+
+commit f502a49625a10103ad45b49080febeccad39b5d4
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    login html fixed once again
+
+commit 0aeb50786c220c810e88eb69822f3fec521790c3
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-12
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-12
+
+    Fixed errors in signup html
+
+commit a65ed95fc97c9dd3428fc1c4056cf838c185ab5b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-09
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-09
+
+    fixed flask
+
+commit d5f41188b32ca3fc89b8f1551cf9b2d680a112bf
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-09
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-09
+
+    updated test user route to include usernames, and updated signup html to include username field
+
+commit b74af3c1f0cc161844f2e687131c995ea85590a9
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-09
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-09
+
+    added database for storing user info and updated login route to accept username or email
+
+commit b620f70a4138cb3cbb6727403a4961f35e1e64b4
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-09
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-09
+
+    updated user class to use username.
+    
+    I think I will use a username and pass system which is linked to an email upon sign up.
+
+commit c1c05324f4df85bed7376213f671066bb4f4a772
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-09
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-09
+
+    added debug route for login, and added debug output to main login route
+
+commit 4e40b6a09243b4ea148929ec2f812d905ead33ae
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added debug route, as admin page was not opening
+
+commit 30b2aa1d2652e3fd57c95c25adbf2637aab722fb
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    fixed database path
+
+commit 36417c51804cb56f711c9d6f82fdca90c2bead66
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    fixed dashboards not openeing error: added databse tables
+
+commit cb9226e1768cf682d31a051ad6593c98848c712e
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added pending approval route
+
+commit 3a03443853d718f64d71c264497adac615874add
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    fixed test user route
+
+commit b7cc623afa1e94c5235a27e8fd6574bba2852d17
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    created test user code in app.py
+
+commit 026eb1a7f92a9ece1af1f40f611d41581d86c782
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added CSS for dashboards
+
+commit 0d4f50e1e5955a229758012f9155f422fadb0335
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added html code for "pending approval" screen
+
+commit fe5869185e91e65d8fae7128f733bc7abf1e80ef
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added a student and admin dashboard, as well as new student and admin folder in the templates section
+
+commit 9a614edd4e06c026168daca062928366fd7c2bc2
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    updated login route to redirect based on admin or student status
+
+commit f011e4f78d2cf63decab8e51a4b636735559846c
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    fixed indent errors in app.py, and fixed signup page not showing up error
+
+commit 2280bb63bd660b4bca45fe0ced51d651b134be3b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added html and CSS for the signup page
+
+commit 2b2fd7164673d0fcc776fae4c9bee851d41afbcd
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-08
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-08
+
+    added signup html file, and created signup page route in app.py
+
+commit 966efa1155fd1608eaa6907eeba0e2dc3483e3cd
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    The html structure broke so I fixed:
+    Added missing wrapper divs (auth-wrapper and auth-card)
+    
+    title and subtitle
+    
+    missing password field
+    
+    Moved flash messages to the
+    correct location (before the form)
+    
+    Removed broken JavaScript (not needed with flash messages)
+    
+    Fixed all closing tags
+    
+    Added proper structure
+
+commit f725389938dcf4b420b0a968e68cb98f7bae4670
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    Made error message dissapear, after page refresh, code edits in app.py andlogin.html
+
+commit 8b29db0d346cdee359e2b3f6f06f3168a4d66b9c
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    fixed bugs
+
+commit 3008972debcbd0fad2091fd7b0a01ed10380e936
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    fixed the path in app.py so when website launched it takes you to login page
+
+commit 4a6b45940d2dea6fc70b0388dfa414e682761a59
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    more fixes
+
+commit b3899f09f28112ddfef8cb825bf83afe646784ee
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    fixed minor errors
+
+commit 747cf18207f3401387e464538f796d7fd2c470d2
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-04
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-04
+
+    Added CSS for the login section, and switched font family to work sans.
+
+commit b4d4b3336b4d76c65de6c52c8297d5c79f21ce9b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-03
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-03
+
+    Added HTML for log in page
+
+commit 108453251de67d12b698e13fb22bd73785745ece
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-12-03
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-12-03
+
+    Added a route for login page and route for log out, and imported werkzeug security
+
+commit ea3c768fca9e5a5e35fedc511ef76bfcb456b5cd
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-27
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-27
+
+    previous commit message
+
+commit 9a918cb61ec0e0d4a0c79ef0b469b5235fb06085
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-27
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-27
+
+    Added organization to folders and made a roadmap file (called "WORKPLAN.md", and found in "Doccumentation" folder)
+
+commit 75442ae24081ce1a0a41761b39a737279b83b2bc
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-27
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-27
+
+    test
+
+commit b62eee1cf52b44a1d5177da207889ab6abe000c1
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-27
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-27
+
+    added SQLite database models for User, Booking, Availability, and Notification
+
+commit 2f93b79d6fd7078a506569ac1d2c820e4e4fa5fe
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-27
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-27
+
+    added configuration for SQLAlchemy
+
+commit 128862342901c147abb0402061de70d02a54f30b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-24
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-24
+
+    Remove tracked virtual environment
+
+commit 0ec8f7a2a8fdbd73a6c21ed232d28d3c20c9e430
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    Created basic css styling for the calendar
+
+commit 4dade33e6a97fed21f37262b5f06a9ba3b86ea6b
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    fixed html to an empty table cus JS builds everything
+
+commit 0bb40133687a4e1266f4eca7ee88281234178870
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    fixed indentations, misspellings, and added code which sends the data to flask.
+
+commit 95dc3faa29d7592475282698b3e59ef9587dde76
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    added a listener to register when cells are clicked + last comment (forgot to cmnd S...)
+
+commit bea841ec2d829e05ae4dd4271f4052d1075dff55
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    Added code so for each time it creates a row with a time label and cell for each day. Now i got a grid of time slots :))
+
+commit 7d1a6f90a00e6de69f68af68d5f131e7a04a8fee
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-23
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-23
+
+    Added a DOM which will allow javascript to interact with HTML.
+    
+    Also added the js code for the calendar itself that creates a table header row with all the days, adds it to my table, and loops thru the dayOfWeek to create and append the header cells.
+
+commit 815cbb881ca9dfdfc7ed1cab187fdb2eca330b78
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-21
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-21
+
+    started coding the html stuff for the calendar table, and refined the .py route
+
+commit 8d6b1509ea0d3aaae9d939ac96806ee89313ef7d
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-19
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-19
+
+    Began python section of the project, created a homepage route, and started coding the route for selecting the date.
+
+commit 0c64a6f54a5a26052feaa2bd8ee56fdea3315ce1
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-18
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-18
+
+    created a virtual enviornment (venv)
+
+commit 930edb9c88955ccb3bae5c18b42682dd3e30a740
+Author:     Krot101 <platon.malinin@gmail.com>
+AuthorDate: 2025-11-17
+Commit:     Krot101 <platon.malinin@gmail.com>
+CommitDate: 2025-11-17
+
+    updated readme
+
+commit 49c2d5b08a08474f8b58b7dfe2b0ba71ad90dfb2
+Author:     acarle <acarle@asbarcelona.com>
+AuthorDate: 2025-11-13
+Commit:     acarle <acarle@asbarcelona.com>
+CommitDate: 2025-11-13
+
+    Added Issue Template for Weekly Goal Planning
+
+commit 6bb028be6e7faa4985374f37fcc73239795f6243
+Author:     acarle <acarle@asbarcelona.com>
+AuthorDate: 2025-11-11
+Commit:     acarle <acarle@asbarcelona.com>
+CommitDate: 2025-11-11
+
+    Update this README.md with info about your IA
+
+commit e234d347633517be6a97fa8f43636c83b983af75
+Author:     acarle <acarle@asbarcelona.com>
+AuthorDate: 2025-11-10
+Commit:     acarle <acarle@asbarcelona.com>
+CommitDate: 2025-11-10
+
+    Playground folder for tutorials and experiments
+
+commit f8d30ccd097d1f17cc6459af0399fa4b3e6760a2
+Author:     acarle <acarle@asbarcelona.com>
+AuthorDate: 2025-11-10
+Commit:     acarle <acarle@asbarcelona.com>
+CommitDate: 2025-11-10
+
+    added claude sourced .md intro files, including /playgroud
+
+commit a72ad8be6e34e5669f14752f53fc83240b21885c
+Author:     Andrii Basov <90106294+BAD353@users.noreply.github.com>
+AuthorDate: 2025-11-04
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-11-04
+
+    Added WELCOME.md
+    
+    Started working on the welcome file
+
+commit 4a73f1634362f79f33f246e3606e3fe2585d13fa
+Author:     Andrew Carle <105776495+mrcarle-asb@users.noreply.github.com>
+AuthorDate: 2025-11-03
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-11-03
+
+    Update README.md
+
+commit ba8bded7053aa3a12db720b6ec5655d2dbeade94
+Author:     Andrew Carle <105776495+mrcarle-asb@users.noreply.github.com>
+AuthorDate: 2025-11-02
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-11-02
+
+    Initial commit

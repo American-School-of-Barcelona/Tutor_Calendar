@@ -166,12 +166,11 @@ function checkPastSlots() {
 async function loadBookingColors() {
     try {
         const weekStartISO = currentWeekStart.toISOString();
-        // Check if user is logged in - use different endpoint for public view
-        const endpoint = window.location.pathname === '/availability' 
-            ? '/api/public/calendar/bookings' 
-            : '/api/calendar/bookings';
-        
-        const response = await fetch(`${endpoint}?week_start=${weekStartISO}`);
+        const isPublic = document.body.classList.contains('public-calendar');
+        const url = isPublic
+            ? `/api/public/calendar/bookings?week_start=${weekStartISO}`
+            : `/api/calendar/bookings?week_start=${weekStartISO}`;
+        const response = await fetch(url);
         const data = await response.json();
         
         if (data.success && data.bookings) {
@@ -274,19 +273,7 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
     });
 }
 
-async function loadBookingColors() {
-    try {
-        const weekStartISO = currentWeekStart.toISOString();
-        const response = await fetch(`/api/calendar/bookings?week_start=${weekStartISO}`);
-        const data = await response.json();
-        
-        if (data.success && data.bookings) {
-            applyBookingColors(data.bookings, data.unavailability_blocks || []);
-        }
-    } catch (error) {
-        console.error('Error loading booking colors:', error);
-    }
-}
+
 
 let currentBookingSlot = null;
 let currentDuration = 120; // minutes, default 2 hours

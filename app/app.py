@@ -73,14 +73,14 @@ def get_public_calendar_bookings():
     else:
         week_start = datetime.utcnow()
     
-    # Calculate week end (7 days later)
+    # Calculate week end 
     week_end = week_start + timedelta(days=7)
     
-    # Get all accepted bookings in this week (only show accepted, not pending)
+    # Get all accepted bookings in this week 
     bookings = Booking.query.filter(
         Booking.start_time >= week_start,
         Booking.start_time < week_end,
-        Booking.status == "accepted"
+        Booking.status.in_(["accepted", "pending"])
     ).all()
     
     # Format bookings for frontend
@@ -137,6 +137,8 @@ class User(db.Model, UserMixin):
     __tablename__ = "user"
     
     id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(80), nullable=True)
+    last_name = db.Column(db.String(80), nullable=True)
     username = db.Column(db.String(80), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
@@ -417,7 +419,9 @@ def signup():
         admin_code = request.form.get("admin_code", "").strip()
         secret = current_app.config.get("ADMIN_SIGNUP_SECRET") or ""
         if secret and admin_code == secret:
-            new_user = User(
+                        new_user = User(
+                first_name=name,
+                last_name=lastname,
                 username=username,
                 email=email,
                 password_hash=hashed,
@@ -426,6 +430,8 @@ def signup():
             )
         else:
             new_user = User(
+                first_name=name,
+                last_name=lastname,
                 username=username,
                 email=email,
                 password_hash=hashed,
@@ -1083,7 +1089,7 @@ def book_slot():
         except ValueError as e:
             return jsonify({"success": False, "error": str(e)}), 400
         
-        # Get tutor/admin (for now, assume there's one admin/tutor)
+        # Get tutor/admin (for now, assuming there's one admin/tutor)
         tutor = User.query.filter_by(role="admin").first()
         if not tutor:
             return jsonify({"success": False, "error": "No tutor available"}), 500
