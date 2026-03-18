@@ -97,7 +97,12 @@ function renderHistory(bookings) {
 
 // Load history from API
 function loadHistory() {
-    fetch('/api/student/history')
+    const status = document.getElementById('history-status').value;
+    const sort = document.getElementById('history-sort').value;
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    params.set('sort', sort);
+    fetch('/api/student/history?' + params.toString())
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -111,8 +116,9 @@ function loadHistory() {
             document.getElementById('history-loading').textContent = 'Error loading history. Please refresh.';
         });
 }
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadHistory();
+    document.getElementById('history-status').addEventListener('change', loadHistory);
+    document.getElementById('history-sort').addEventListener('change', loadHistory);
 });

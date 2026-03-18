@@ -20,7 +20,7 @@
                     {% for user in pending_users %}
                         <div class="user-request-card">
                             <div class="user-info">
-                                <p><strong>Name:</strong> {{ ((user.first_name or '') ~ ' ' ~ (user.last_name or '')).strip() or user.username }}</p>
+                                <p><strong>Name:</strong> {{ ((user.first_name or '') ~ ' ' ~ (user.last_name or '')).strip() }}</p>
                                 <p><strong>Username:</strong> {{ user.username or '-' }}</p>
                                 <p><strong>Email:</strong> {{ user.email }}</p>
                                 <p><strong>User ID:</strong> {{ user.id }}</p>

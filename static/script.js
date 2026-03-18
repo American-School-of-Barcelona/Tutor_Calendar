@@ -209,8 +209,8 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
         
         // Check if slot is less than 3 hours from now - make it unavailable
         if (slotStart < minAllowedTime) {
-            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted');
-            cell.classList.add('slot-unavailable');
+            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted', 'slot-unavailable');
+            cell.classList.add('slot-advance-limit');
             cell.style.cursor = 'not-allowed';
             return;
         }

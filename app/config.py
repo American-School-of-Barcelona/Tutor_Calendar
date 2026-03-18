@@ -9,7 +9,7 @@ load_dotenv(dotenv_path=env_path)
 # Get the project root directory (one level up from app/)
 project_root = Path(__file__).resolve().parents[1]
 instance_dir = project_root / 'instance'
-instance_dir.mkdir(exist_ok=True)  # Create instance directory if it doesn't exist
+instance_dir.mkdir(exist_ok=True)  
 db_path = instance_dir / 'app.db'
 
 class Config:
@@ -29,3 +29,4 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
     MAIL_SUBJECT_PREFIX = os.getenv('MAIL_SUBJECT_PREFIX', '[Tutomatics] ')
+    ADMIN_SIGNUP_SECRET = os.getenv('ADMIN_SIGNUP_SECRET', '')
