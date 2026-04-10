@@ -1608,7 +1608,8 @@
     margin-left: 12px;
 }
 
-.slot-advance-limit {
-    background-color: #d9d9d9;
+#calendar td.slot-advance-limit {
+    background: #d9d9d9;
     opacity: 0.8;
+    cursor: not-allowed;
 }

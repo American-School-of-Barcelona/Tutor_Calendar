@@ -1059,9 +1059,9 @@ def book_slot():
             return jsonify({"success": False, "error": "Missing required fields"}), 400
         
         try:
-            start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+            start_time = datetime.fromisoformat(start_time_str)
             if start_time.tzinfo:
-                start_time = start_time.replace(tzinfo=None)
+                start_time = start_time.astimezone().replace(tzinfo=None)
         except ValueError:
             return jsonify({"success": False, "error": "Invalid date format"}), 400
         

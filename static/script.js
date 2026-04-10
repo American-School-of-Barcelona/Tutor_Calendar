@@ -119,7 +119,7 @@ function renderCalendar() {
         weekDates.forEach((date, dayIndex) => {
             const dayCell = document.createElement('td');
             const dayName = daysOfWeek[dayIndex];
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             
             dayCell.setAttribute('data-day', dayName);
             dayCell.setAttribute('data-time', time);
@@ -137,30 +137,13 @@ function renderCalendar() {
     });
     
     document.getElementById('week-display').textContent = formatMonthYear(currentWeekStart);
-    checkPastSlots();
-
+    
+    // slot states are handled in applyBookingColors()
     loadBookingColors();
 }
 
 function checkPastSlots() {
-    const now = new Date();
-    const cells = document.querySelectorAll('#calendar td');
-    
-    cells.forEach(cell => {
-        const dateStr = cell.getAttribute('data-date');
-        const timeStr = cell.getAttribute('data-time');
-        
-        if (dateStr && timeStr) {
-            const [year, month, day] = dateStr.split('-').map(Number);
-            const slotTime = parseTime(timeStr);
-            const slotDate = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
-            
-            if (slotDate < now) {
-                cell.classList.add('past-slot');
-                cell.style.cursor = 'not-allowed';
-            }
-        }
-    });
+    loadBookingColors();
 }
 
 async function loadBookingColors() {
@@ -199,6 +182,16 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
         const slotStart = new Date(year, month - 1, day, slotTime.hours, slotTime.minutes, 0, 0);
         const slotEnd = new Date(slotStart);
         slotEnd.setMinutes(slotEnd.getMinutes() + 15); // 15-minute slot
+
+        cell.classList.remove(
+            'slot-available',
+            'slot-pending',
+            'slot-accepted',
+            'slot-unavailable',
+            'slot-advance-limit',
+            'past-slot'
+        );
+        cell.style.cursor = 'pointer';
         
         // Check if slot is in the past
         if (slotStart < now) {
@@ -209,7 +202,6 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
         
         // Check if slot is less than 3 hours from now - make it unavailable
         if (slotStart < minAllowedTime) {
-            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted', 'slot-unavailable');
             cell.classList.add('slot-advance-limit');
             cell.style.cursor = 'not-allowed';
             return;
@@ -236,7 +228,6 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
         }
         
         if (isUnavailable) {
-            cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted');
             cell.classList.add('slot-unavailable');
             cell.style.cursor = 'not-allowed';
             return;
@@ -260,9 +251,7 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
             }
         }
         
-        // Apply color class
-        cell.classList.remove('slot-available', 'slot-pending', 'slot-accepted', 'slot-unavailable');
-        
+
         if (slotStatus === 'available') {
             cell.classList.add('slot-available');
         } else if (slotStatus === 'pending') {
@@ -362,8 +351,10 @@ function submitBooking() {
     const endDateTime = new Date(startDateTime);
     endDateTime.setMinutes(endDateTime.getMinutes() + currentDuration);
     
+    const localStartTime = `${startDateTime.getFullYear()}-${String(startDateTime.getMonth() + 1).padStart(2, '0')}-${String(startDateTime.getDate()).padStart(2, '0')}T${String(startDateTime.getHours()).padStart(2, '0')}:${String(startDateTime.getMinutes()).padStart(2, '0')}:00`;
+
     const bookingData = {
-        start_time: startDateTime.toISOString(),
+        start_time: localStartTime,
         lesson_minutes: currentDuration
     };
     
