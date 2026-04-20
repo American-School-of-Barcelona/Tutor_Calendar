@@ -1,10 +1,10 @@
 // Format datetime for display
 function formatDateTime(isoString) {
     const date = new Date(isoString);
-    const options = { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
+    const options = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
@@ -17,7 +17,7 @@ function formatDateTime(isoString) {
 function formatTimeRange(startIso, endIso) {
     const start = new Date(startIso);
     const end = new Date(endIso);
-    
+
     const formatTime = (date) => {
         let hours = date.getHours();
         const minutes = date.getMinutes();
@@ -27,7 +27,7 @@ function formatTimeRange(startIso, endIso) {
         const minsStr = minutes.toString().padStart(2, '0');
         return `${hours}:${minsStr} ${period}`;
     };
-    
+
     return `${formatTime(start)} - ${formatTime(end)}`;
 }
 
@@ -48,26 +48,33 @@ function getStatusDisplay(status) {
     return statusMap[status] || { class: 'status-unknown', text: status };
 }
 
+function isBookingStillUpcoming(booking) {
+    const end = new Date(booking.end_time);
+    return end > new Date();
+}
+
 // Render booking list
 function renderBookings(bookings) {
     const container = document.getElementById('bookings-list');
     const loading = document.getElementById('bookings-loading');
     const empty = document.getElementById('bookings-empty');
-    
+
+    bookings = (bookings || []).filter(isBookingStillUpcoming);
+
     loading.style.display = 'none';
-    
+
     if (bookings.length === 0) {
         empty.style.display = 'block';
         container.innerHTML = '';
         return;
     }
-    
+
     empty.style.display = 'none';
-    
+
     container.innerHTML = bookings.map(booking => {
         const statusInfo = getStatusDisplay(booking.status);
         const canCancel = booking.status === 'pending';
-        
+
         return `
                 <div class="student-booking-item" data-booking-id="${booking.id}" data-start-time="${booking.start_time}" data-price-eur="${booking.price_eur || ''}">
                 <div class="student-booking-info">
@@ -75,7 +82,7 @@ function renderBookings(bookings) {
                         <h3 class="student-booking-date">${formatDateTime(booking.start_time)}</h3>
                         <span class="booking-status-badge ${statusInfo.class}">${statusInfo.text}</span>
                     </div>
-                    
+
                     <div class="student-booking-details">
                         <div class="student-booking-detail">
                             <span class="student-booking-detail-label">Time:</span>
@@ -91,22 +98,18 @@ function renderBookings(bookings) {
                         </div>
                     </div>
                 </div>
-                
-                ${canCancel ? `
+
+                    ${canCancel ? `
                     <div class="student-booking-actions">
-                        <button class="student-booking-cancel-btn" data-id="${booking.id}">
+                        <button type="button" class="student-booking-cancel-btn" data-id="${booking.id}">
                             Cancel Booking
                         </button>
                     </div>
-                ` : ''}
+                ` : `
+                `}
             </div>
         `;
     }).join('');
-    
-    // Attach cancel event listeners
-    container.querySelectorAll('.student-booking-cancel-btn').forEach(btn => {
-        btn.addEventListener('click', handleCancelBooking);
-    });
 }
 
 // Handle cancel booking
@@ -117,9 +120,24 @@ function isWithin24h(isoStart) {
     return diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000;
 }
 
+function notifyCalendarsBookingChanged() {
+    try {
+        localStorage.setItem('tutor_calendar_invalidate', String(Date.now()));
+    } catch (e) {
+        /* ignore private mode */
+    }
+}
+
 function handleCancelBooking(event) {
-    const bookingId = event.target.getAttribute('data-id');
-    const bookingItem = event.target.closest('.student-booking-item');
+    const btn = event.target.closest('.student-booking-cancel-btn');
+    if (!btn) {
+        return;
+    }
+    const bookingId = btn.getAttribute('data-id');
+    const bookingItem = btn.closest('.student-booking-item');
+    if (!bookingId || !bookingItem) {
+        return;
+    }
     const startTime = bookingItem.getAttribute('data-start-time');
     const priceEur = bookingItem.getAttribute('data-price-eur') || '0';
     const within24h = startTime && isWithin24h(startTime);
@@ -134,32 +152,37 @@ function handleCancelBooking(event) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'same-origin',
     })
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => {
+        if (!response.ok) {
+            return response.json().then((body) => Promise.reject(body));
+        }
+        return response.json();
+    })
+    .then((data) => {
         if (data.success) {
             if (data.within_24h) {
                 alert('Booking cancelled. Cancelling within 24 hours of the lesson may result in the lesson fee being charged.');
             }
-            bookingItem.style.opacity = '0.5';
-            bookingItem.style.pointerEvents = 'none';
-            setTimeout(() => {
-                loadBookings();
-            }, 500);
+            notifyCalendarsBookingChanged();
+            bookingItem.remove();
+            loadBookings();
         } else {
             alert(data.error || 'Failed to cancel booking');
         }
     })
-    .catch(error => {
+    .catch((error) => {
         console.error('Error:', error);
-        alert('Network error. Please try again.');
+        const msg = (error && error.error) || error.message || 'Network error. Please try again.';
+        alert(msg);
     });
 }
 
 // Load bookings from API
 function loadBookings() {
-    fetch('/api/student/bookings')
+    fetch('/api/student/bookings', { credentials: 'same-origin' })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -176,5 +199,10 @@ function loadBookings() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    const list = document.getElementById('bookings-list');
+    if (list) {
+        list.addEventListener('click', handleCancelBooking);
+    }
     loadBookings();
+    setInterval(loadBookings, 30000);
 });

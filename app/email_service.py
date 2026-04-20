@@ -105,6 +105,38 @@ Please log in to review and approve/deny this request.
 Tutomatics Admin Panel"""
     return send_email_safe(admin_email, subject, template, student_name, booking_time)
 
+def send_pending_booking_cancelled_by_student_emails(
+    student_email, student_name, admin_email, booking_time
+):
+    """
+    When a student cancels a pending request: notify the tutor/admin and confirm to the student.
+    """
+    if admin_email:
+        send_email_safe(
+            admin_email,
+            "Student cancelled a booking request",
+            """Hello,
+
+The student {} has cancelled their pending lesson request for {}.
+
+— Tutomatics""",
+            student_name,
+            booking_time,
+        )
+    send_email_safe(
+        student_email,
+        "Booking request cancelled",
+        """Hello {},
+
+You have cancelled your booking request for {}.
+
+You can submit a new request anytime from your calendar.
+
+— Tutomatics""",
+        student_name,
+        booking_time,
+    )
+
 def send_signup_approved_email(user_email, user_name):
     subject = "Signup Approved"
     template = """Hello {},

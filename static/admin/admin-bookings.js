@@ -86,62 +86,71 @@ function renderBookings(bookings) {
             </div>
             
             <div class="booking-item-actions">
-                <button class="booking-action-btn booking-action-approve" data-action="approve" data-id="${booking.id}">
+                <button type="button" class="booking-action-btn booking-action-approve" data-action="approve" data-id="${booking.id}" onclick="handleBookingAction(this)">
                     ✓ Approve
                 </button>
-                <button class="booking-action-btn booking-action-deny" data-action="deny" data-id="${booking.id}">
+                <button type="button" class="booking-action-btn booking-action-deny" data-action="deny" data-id="${booking.id}" onclick="handleBookingAction(this)">
                     ✗ Deny
                 </button>
             </div>
         </div>
     `).join('');
     
-    // Attach event listeners
-    container.querySelectorAll('.booking-action-btn').forEach(btn => {
-        btn.addEventListener('click', handleBookingAction);
-    });
+    // Clicks are handled by a single document-level listener (see DOMContentLoaded)
 }
 
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
+    if (text == null || text === '') {
+        return '';
+    }
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
 // Handle approve/deny action
-function handleBookingAction(event) {
-    const action = event.target.getAttribute('data-action');
-    const bookingId = event.target.getAttribute('data-id');
-    const bookingItem = event.target.closest('.booking-item');
-    
+function handleBookingAction(button) {
+    const action = button.dataset.action;
+    const bookingId = button.dataset.id;
+    const bookingItem = button.closest('.booking-item');
+    console.log('booking action click', { action, bookingId });
+
+    if (!action || !bookingId || !bookingItem) {
+        console.error('Missing action metadata', { action, bookingId });
+        return;
+    }
+
     if (!confirm(`Are you sure you want to ${action} this booking request?`)) {
         return;
     }
-    
+
     const url = `/admin/bookings/${bookingId}/${action}`;
-    
+    button.disabled = true;
+
     fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bookingItem.style.opacity = '0.5';
-            bookingItem.style.pointerEvents = 'none';
-            setTimeout(() => {
-                loadBookings();
-            }, 500);
-        } else {
-            alert(data.error || `Failed to ${action} booking`);
+    .then(async (response) => {
+        const contentType = response.headers.get('content-type') || '';
+        const payload = contentType.includes('application/json')
+            ? await response.json()
+            : { success: false, error: await response.text() };
+
+        if (!response.ok || !payload.success) {
+            throw new Error(payload.error || `Failed to ${action} booking`);
         }
+
+        bookingItem.style.opacity = '0.5';
+        bookingItem.style.pointerEvents = 'none';
+        setTimeout(() => loadBookings(), 300);
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert(`Network error. Please try again.`);
+        console.error('Booking action failed:', error);
+        alert(error.message || `Failed to ${action} booking`);
+        button.disabled = false;
     });
 }
 
@@ -151,7 +160,12 @@ function loadBookings() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                renderBookings(data.bookings);
+                try {
+                    renderBookings(data.bookings);
+                } catch (e) {
+                    console.error(e);
+                    alert('Could not render bookings: ' + e.message);
+                }
             } else {
                 console.error('Failed to load bookings:', data.error);
             }

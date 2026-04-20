@@ -1,7 +1,19 @@
 from flask import redirect, flash
 from flask_login import current_user
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+
+
+def parse_time_hhmm(s: str) -> time:
+    """Parse HTML time input values: 'HH:MM' or 'HH:MM:SS'."""
+    s = (s or "").strip()
+    for fmt in ("%H:%M:%S", "%H:%M"):
+        try:
+            return datetime.strptime(s, fmt).time()
+        except ValueError:
+            continue
+    raise ValueError(f"Invalid time: {s!r}")
+
 
 def admin_required(f):
     @wraps(f)
@@ -90,7 +102,7 @@ def is_within_availability(tutor_id: int, start: datetime, end: datetime, db_ses
         True if booking does NOT overlap any unavailability block (so it is allowed),
         False if it overlaps at least one unavailability block.
     """
-    # Import here to avoid circular import issues
+    
     from app.app import Availability
     
     booking_start_time = start.time()
@@ -101,10 +113,14 @@ def is_within_availability(tutor_id: int, start: datetime, end: datetime, db_ses
     if not blocks:
         return True
     
+    booking_date = start.date()
+
     for block in blocks:
+        if block.repeat_until and booking_date > block.repeat_until.date():
+            continue
         if booking_start_time < block.end_time and booking_end_time > block.start_time:
             return False
-    
+
     return True
 
 def is_within_24h_of_booking(start_time) -> bool:

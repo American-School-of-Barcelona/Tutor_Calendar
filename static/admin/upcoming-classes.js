@@ -90,17 +90,14 @@ function renderClasses(bookings) {
             </div>
             
             <div class="booking-item-actions">
-                <button class="booking-action-btn booking-action-cancel" data-id="${booking.id}">
+                <button type="button" class="booking-action-btn booking-action-cancel" data-id="${booking.id}" onclick="handleCancelClassFromButton(this)">
                     Cancel Class
                 </button>
             </div>
         </div>
     `).join('');
     
-    // Attach cancel event listeners
-    container.querySelectorAll('.booking-action-cancel').forEach(btn => {
-        btn.addEventListener('click', handleCancelClass);
-    });
+    // Clicks handled by document listener (see DOMContentLoaded)
 }
 
 // Handle cancel class
@@ -111,9 +108,19 @@ function isWithin24h(isoStart) {
     return diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000;
 }
 
+function handleCancelClassFromButton(btn) {
+    handleCancelClass({ currentTarget: btn });
+}
+
 function handleCancelClass(event) {
-    const bookingId = event.target.getAttribute('data-id');
-    const bookingItem = event.target.closest('.booking-item');
+    const btn = event.currentTarget;
+    const bookingId = btn.getAttribute('data-id');
+    const bookingItem = btn.closest('.booking-item');
+    if (!bookingId || !bookingItem) {
+        console.error('Cancel: missing booking id or row', { bookingId, bookingItem });
+        return;
+    }
+
     const startTime = bookingItem.getAttribute('data-start-time');
     const priceEur = bookingItem.getAttribute('data-price-eur') || '0';
     const within24h = startTime && isWithin24h(startTime);
@@ -124,31 +131,32 @@ function handleCancelClass(event) {
         return;
     }
 
+    btn.disabled = true;
+
     fetch(`/admin/bookings/${bookingId}/cancel`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            if (data.within_24h) {
-                alert('Class cancelled. Cancelling within 24 hours may result in the lesson fee being charged.');
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                if (data.within_24h) {
+                    alert('Class cancelled. Cancelling within 24 hours may result in the lesson fee being charged.');
+                }
+                bookingItem.style.opacity = '0.5';
+                bookingItem.style.pointerEvents = 'none';
+                setTimeout(() => loadClasses(), 500);
+            } else {
+                alert(data.error || 'Failed to cancel class');
+                btn.disabled = false;
             }
-            bookingItem.style.opacity = '0.5';
-            bookingItem.style.pointerEvents = 'none';
-            setTimeout(() => {
-                loadClasses();
-            }, 500);
-        } else {
-            alert(data.error || 'Failed to cancel class');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Network error. Please try again.');
-    });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Network error. Please try again.');
+            btn.disabled = false;
+        });
 }
 
 // Load upcoming classes

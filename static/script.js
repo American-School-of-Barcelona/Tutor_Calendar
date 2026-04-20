@@ -81,6 +81,17 @@ function parseTime(timeStr) {
     return { hours: hour24, minutes: minutes || 0 };
 }
 
+/** API times are 24h "HH:MM" or "HH:MM:SS"; calendar cells use "h:mm AM/PM". */
+function parseTime24h(hhmm) {
+    if (hhmm == null || hhmm === '') {
+        return { hours: 0, minutes: 0 };
+    }
+    const parts = String(hhmm).trim().split(':');
+    const hours = parseInt(parts[0], 10) || 0;
+    const minutes = parseInt(parts[1], 10) || 0;
+    return { hours, minutes };
+}
+
 function isPastSlot(date, timeStr) {
     const now = new Date();
     const slotTime = parseTime(timeStr);
@@ -147,20 +158,47 @@ function checkPastSlots() {
 }
 
 async function loadBookingColors() {
+    const weekStartISO = currentWeekStart.toISOString();
+    const isPublic = document.body.classList.contains('public-calendar');
+    const localDemo = Array.isArray(window.__localDemoUnavailability)
+        ? window.__localDemoUnavailability
+        : [];
+    const onAdminCalendar = Boolean(document.getElementById('add-block-btn'));
+
+    function mergeAndApply(bookings, blocks) {
+        const b = Array.isArray(bookings) ? bookings : [];
+        const bl = Array.isArray(blocks) ? blocks : [];
+        const mergedBlocks = onAdminCalendar ? [...bl, ...localDemo] : bl;
+        applyBookingColors(b, mergedBlocks);
+    }
+
     try {
-        const weekStartISO = currentWeekStart.toISOString();
-        const isPublic = document.body.classList.contains('public-calendar');
         const url = isPublic
             ? `/api/public/calendar/bookings?week_start=${weekStartISO}`
             : `/api/calendar/bookings?week_start=${weekStartISO}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.success && data.bookings) {
-            applyBookingColors(data.bookings, data.unavailability_blocks || []);
+        const response = await fetch(url, { credentials: 'same-origin' });
+
+        if (!response.ok) {
+            console.warn('loadBookingColors: HTTP', response.status);
+            mergeAndApply([], []);
+            return;
         }
+
+        const data = await response.json();
+
+        if (!data || !data.success) {
+            mergeAndApply([], []);
+            return;
+        }
+
+        const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+        const blocks = Array.isArray(data.unavailability_blocks)
+            ? data.unavailability_blocks
+            : [];
+        mergeAndApply(bookings, blocks);
     } catch (error) {
         console.error('Error loading booking colors:', error);
+        mergeAndApply([], []);
     }
 }
 
@@ -199,36 +237,46 @@ function applyBookingColors(bookings, unavailabilityBlocks = []) {
             cell.style.cursor = 'not-allowed';
             return;
         }
-        
-        // Check if slot is less than 3 hours from now - make it unavailable
-        if (slotStart < minAllowedTime) {
-            cell.classList.add('slot-advance-limit');
-            cell.style.cursor = 'not-allowed';
-            return;
-        }
-        
-        // Check if this slot overlaps with any unavailability block
+
+        // Tutor unavailability — before 3-hour rule so blocked slots still get slot-unavailable (grey).
         let isUnavailable = false;
         for (const block of unavailabilityBlocks) {
-            const blockStart = parseTime(block.start_time);
-            const blockEnd = parseTime(block.end_time);
-            
+            if (block.repeat_until) {
+                const until = new Date(block.repeat_until);
+                const untilDay = new Date(until.getFullYear(), until.getMonth(), until.getDate());
+                const slotDay = new Date(year, month - 1, day);
+                if (slotDay > untilDay) {
+                    continue;
+                }
+            }
+
+            const blockStart = parseTime24h(block.start_time);
+            const blockEnd = parseTime24h(block.end_time);
+
             const blockStartDate = new Date(year, month - 1, day, blockStart.hours, blockStart.minutes, 0, 0);
             const blockEndDate = new Date(year, month - 1, day, blockEnd.hours, blockEnd.minutes, 0, 0);
-            
-            // Handle blocks that span midnight
-            if (blockEnd.hours < blockStart.hours) {
+
+            if (blockEndDate <= blockStartDate) {
+                blockEndDate.setDate(blockEndDate.getDate() + 1);
+            } else if (blockEnd.hours < blockStart.hours) {
                 blockEndDate.setDate(blockEndDate.getDate() + 1);
             }
-            
+
             if (slotStart < blockEndDate && slotEnd > blockStartDate) {
                 isUnavailable = true;
                 break;
             }
         }
-        
+
         if (isUnavailable) {
             cell.classList.add('slot-unavailable');
+            cell.style.cursor = 'not-allowed';
+            return;
+        }
+
+        // Check if slot is less than 3 hours from now - make it unavailable
+        if (slotStart < minAllowedTime) {
+            cell.classList.add('slot-advance-limit');
             cell.style.cursor = 'not-allowed';
             return;
         }
@@ -302,21 +350,32 @@ function formatTimeRange(startTimeStr, durationMinutes) {
 
 // Open booking modal with selected slot
 function openBookingModal(dateStr, timeStr, dayName) {
+    const modal = document.getElementById('booking-modal');
+    if (!modal) {
+        return;
+    }
     currentBookingSlot = { dateStr, timeStr, dayName };
     currentDuration = MIN_DURATION;
-    
+
     const slotDisplay = formatTimeRange(timeStr, currentDuration);
     document.getElementById('booking-slot-time').textContent = slotDisplay;
     document.getElementById('duration-display').textContent = '2h';
     document.getElementById('price-display').textContent = `${calculatePrice(currentDuration)}€`;
-    
-    document.getElementById('booking-modal').classList.add('active');
+
+    modal.classList.add('active');
 }
 
 // Close booking modal
 function closeBookingModal() {
-    document.getElementById('booking-modal').classList.remove('active');
-    document.getElementById('booking-error').style.display = 'none';
+    const modal = document.getElementById('booking-modal');
+    if (!modal) {
+        return;
+    }
+    modal.classList.remove('active');
+    const bookingError = document.getElementById('booking-error');
+    if (bookingError) {
+        bookingError.style.display = 'none';
+    }
     currentBookingSlot = null;
     currentDuration = MIN_DURATION;
 }
@@ -452,59 +511,75 @@ function removeToast(toast) {
 
 document.addEventListener('DOMContentLoaded', function() {
     renderCalendar();
-    
-    document.getElementById('prev-week').addEventListener('click', function() {
-        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-        renderCalendar();
-    });
-    
-    document.getElementById('next-week').addEventListener('click', function() {
-        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-        renderCalendar();
-    });
-    
-    // Calendar cell click handler - open modal instead of toggle
+
+    const prevWeek = document.getElementById('prev-week');
+    const nextWeek = document.getElementById('next-week');
+    if (prevWeek) {
+        prevWeek.addEventListener('click', function() {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            renderCalendar();
+        });
+    }
+    if (nextWeek) {
+        nextWeek.addEventListener('click', function() {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            renderCalendar();
+        });
+    }
+
     const calendarTable = document.getElementById('calendar');
-    calendarTable.addEventListener('click', function(event) {
-        const clickedCell = event.target;
-        
-        if (
-            clickedCell.tagName === 'TD' &&
-            !clickedCell.classList.contains('past-slot') &&
-            !clickedCell.classList.contains('slot-accepted') &&
-            !clickedCell.classList.contains('slot-unavailable')
-        ) {
-            const day = clickedCell.getAttribute('data-day');
-            const time = clickedCell.getAttribute('data-time');
-            const date = clickedCell.getAttribute('data-date');
-            
-            if (day && time && date) {
-                openBookingModal(date, time, day);
+    if (calendarTable) {
+        calendarTable.addEventListener('click', function(event) {
+            const clickedCell = event.target;
+
+            if (
+                clickedCell.tagName === 'TD' &&
+                !clickedCell.classList.contains('past-slot') &&
+                !clickedCell.classList.contains('slot-accepted') &&
+                !clickedCell.classList.contains('slot-unavailable')
+            ) {
+                const day = clickedCell.getAttribute('data-day');
+                const time = clickedCell.getAttribute('data-time');
+                const date = clickedCell.getAttribute('data-date');
+
+                if (day && time && date) {
+                    openBookingModal(date, time, day);
+                }
             }
-        }
-    });
-    
-    // Modal controls
-    document.getElementById('duration-decrease').addEventListener('click', function() {
-        if (currentDuration > MIN_DURATION) {
-            currentDuration -= 60;
-            updateDurationDisplay();
-        }
-    });
-    
-    document.getElementById('duration-increase').addEventListener('click', function() {
-        if (currentDuration < MAX_DURATION) {
-            currentDuration += 60;
-            updateDurationDisplay();
-        }
-    });
-    
-    document.getElementById('booking-cancel').addEventListener('click', closeBookingModal);
-    document.getElementById('booking-confirm').addEventListener('click', submitBooking);
-    
-    // Close modal when clicking overlay
-    document.querySelector('.booking-modal-overlay').addEventListener('click', closeBookingModal);
-    
+        });
+    }
+
+    const durationDecrease = document.getElementById('duration-decrease');
+    const durationIncrease = document.getElementById('duration-increase');
+    const bookingCancel = document.getElementById('booking-cancel');
+    const bookingConfirm = document.getElementById('booking-confirm');
+    const bookingOverlay = document.querySelector('.booking-modal-overlay');
+
+    if (durationDecrease && durationIncrease) {
+        durationDecrease.addEventListener('click', function() {
+            if (currentDuration > MIN_DURATION) {
+                currentDuration -= 60;
+                updateDurationDisplay();
+            }
+        });
+        durationIncrease.addEventListener('click', function() {
+            if (currentDuration < MAX_DURATION) {
+                currentDuration += 60;
+                updateDurationDisplay();
+            }
+        });
+    }
+
+    if (bookingCancel) {
+        bookingCancel.addEventListener('click', closeBookingModal);
+    }
+    if (bookingConfirm) {
+        bookingConfirm.addEventListener('click', submitBooking);
+    }
+    if (bookingOverlay) {
+        bookingOverlay.addEventListener('click', closeBookingModal);
+    }
+
     setInterval(checkPastSlots, 60000);
 });
 
@@ -538,3 +613,9 @@ function hideLoading() {
         loadingOverlay = null;
     }
 }
+
+window.addEventListener('storage', function (e) {
+    if (e.key === 'tutor_calendar_invalidate' && typeof loadBookingColors === 'function') {
+        loadBookingColors();
+    }
+});

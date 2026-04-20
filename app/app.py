@@ -4,12 +4,13 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color, is_within_24h_of_booking
+from .helpers import admin_required, parse_email_input, calculate_price, slots_overlap, is_within_availability, get_booking_color, is_within_24h_of_booking, parse_time_hhmm
 from .email_service import (
     send_booking_submitted_email,
     send_booking_approved_email,
     send_booking_denied_email,
     send_new_booking_notification_email,
+    send_pending_booking_cancelled_by_student_emails,
     send_signup_approved_email,
     send_signup_denied_email,
     send_new_signup_request_notification_email,
@@ -643,7 +644,7 @@ def student_bookings_api():
     now = datetime.utcnow()
     bookings = Booking.query.filter(
         Booking.student_id == current_user.id,
-        Booking.end_time >= now,
+        Booking.end_time > now,
         Booking.status.in_(["pending", "accepted"])
     ).order_by(Booking.start_time.asc()).all()
     
@@ -718,10 +719,27 @@ def cancel_booking(booking_id):
     
     if booking.status != "pending":
         return jsonify({"success": False, "error": f"Cannot cancel booking with status: {booking.status}"}), 400
-    
+
     booking.status = "cancelled"
     db.session.commit()
     within_24h = is_within_24h_of_booking(booking.start_time)
+
+    try:
+        student = booking.student
+        tutor = User.query.get(booking.tutor_id)
+        if student:
+            time_str = booking.start_time.strftime("%Y-%m-%d %H:%M")
+            student_name = student.username or student.email
+            admin_email = tutor.email if tutor else None
+            send_pending_booking_cancelled_by_student_emails(
+                student_email=student.email,
+                student_name=student_name,
+                admin_email=admin_email,
+                booking_time=time_str,
+            )
+    except Exception as e:
+        print(f"Error sending student cancellation emails: {e}")
+
     return jsonify({
         "success": True,
         "message": "Booking cancelled successfully",
@@ -943,8 +961,8 @@ def create_unavailability_block():
     if not data:
         return jsonify({"success": False, "error": "No data provided"}), 400
     
-    start_time_str = data.get("start_time")
-    end_time_str = data.get("end_time")
+    start_time = parse_time_hhmm(start_time_str)
+    end_time = parse_time_hhmm(end_time_str)
     repeat_rule = data.get("repeat_rule", "none")
     repeat_until_str = data.get("repeat_until")
     
